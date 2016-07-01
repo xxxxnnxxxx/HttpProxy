@@ -4,26 +4,18 @@
 //list_entry functions list
 ////////////////////////////
 VOID
-InitializeListHead(
-				   __out PLIST_ENTRY ListHead
-				   )
+InitializeListHead( __out PLIST_ENTRY ListHead)
 {
-	ListHead->Flink = ListHead->Blink = ListHead;
+    ListHead->Flink = ListHead->Blink = ListHead;
 }
 
 BOOLEAN
-IsListEmpty(
-			__in const LIST_ENTRY * ListHead
-			)
+IsListEmpty(__in const LIST_ENTRY * ListHead)
 {
-	return (BOOLEAN)(ListHead->Flink == ListHead);
+    return (BOOLEAN)(ListHead->Flink == ListHead);
 }
 
-VOID
-InsertTailList(
-			   __inout PLIST_ENTRY ListHead,
-			   __inout PLIST_ENTRY Entry
-			   )
+VOID InsertTailList( __inout PLIST_ENTRY ListHead,  __inout PLIST_ENTRY Entry)
 {
     PLIST_ENTRY Blink;
 
@@ -34,11 +26,7 @@ InsertTailList(
     ListHead->Blink = Entry;
 }
 
-VOID
-InsertHeadList(
-			   __inout PLIST_ENTRY ListHead,
-			   __inout PLIST_ENTRY Entry
-			   )
+VOID InsertHeadList( __inout PLIST_ENTRY ListHead,__inout PLIST_ENTRY Entry)
 {
     PLIST_ENTRY Flink;
 
@@ -50,10 +38,7 @@ InsertHeadList(
 }
 
 
-PLIST_ENTRY
-RemoveTailList(
-			   __inout PLIST_ENTRY ListHead
-			   )
+PLIST_ENTRY RemoveTailList(__inout PLIST_ENTRY ListHead)
 {
     PLIST_ENTRY Blink;
     PLIST_ENTRY Entry;
@@ -66,18 +51,16 @@ RemoveTailList(
 }
 
 PLIST_ENTRY
-RemoveHeadList(
-			   __inout PLIST_ENTRY ListHead
-			   )
+RemoveHeadList( __inout PLIST_ENTRY ListHead)
 {
-    PLIST_ENTRY Flink;
-    PLIST_ENTRY Entry;
+PLIST_ENTRY Flink;
+PLIST_ENTRY Entry;
 
-    Entry = ListHead->Flink;
-    Flink = Entry->Flink;
-    ListHead->Flink = Flink;
-    Flink->Blink = ListHead;
-    return Entry;
+Entry = ListHead->Flink;
+Flink = Entry->Flink;
+ListHead->Flink = Flink;
+Flink->Blink = ListHead;
+return Entry;
 }
 
 BOOLEAN
