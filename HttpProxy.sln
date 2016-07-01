@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpProxy", "HttpProxy\HttpProxy.vcproj", "{49667C6A-5844-4DC1-AA06-CBE8722C082D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpProxy_Dll", "HttpProxy_Dll\HttpProxy_Dll.vcproj", "{4630D329-5823-48C6-A443-A3023EFF1E4D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcurl", "libcurl\libcurl.vcproj", "{A2140E84-BA42-4DA1-9F0B-C069AA8F6A90}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcre", "pcre\pcre.vcproj", "{B8319F67-8232-43EA-AF0C-7B35664DCF35}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpProxyServer", "HttpProxyServer\HttpProxyServer.vcproj", "{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{49667C6A-5844-4DC1-AA06-CBE8722C082D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{49667C6A-5844-4DC1-AA06-CBE8722C082D}.Debug|Win32.Build.0 = Debug|Win32
+		{49667C6A-5844-4DC1-AA06-CBE8722C082D}.Release|Win32.ActiveCfg = Release|Win32
+		{49667C6A-5844-4DC1-AA06-CBE8722C082D}.Release|Win32.Build.0 = Release|Win32
+		{4630D329-5823-48C6-A443-A3023EFF1E4D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4630D329-5823-48C6-A443-A3023EFF1E4D}.Debug|Win32.Build.0 = Debug|Win32
+		{4630D329-5823-48C6-A443-A3023EFF1E4D}.Release|Win32.ActiveCfg = Release|Win32
+		{4630D329-5823-48C6-A443-A3023EFF1E4D}.Release|Win32.Build.0 = Release|Win32
+		{A2140E84-BA42-4DA1-9F0B-C069AA8F6A90}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2140E84-BA42-4DA1-9F0B-C069AA8F6A90}.Debug|Win32.Build.0 = Debug|Win32
+		{A2140E84-BA42-4DA1-9F0B-C069AA8F6A90}.Release|Win32.ActiveCfg = Release|Win32
+		{A2140E84-BA42-4DA1-9F0B-C069AA8F6A90}.Release|Win32.Build.0 = Release|Win32
+		{B8319F67-8232-43EA-AF0C-7B35664DCF35}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B8319F67-8232-43EA-AF0C-7B35664DCF35}.Debug|Win32.Build.0 = Debug|Win32
+		{B8319F67-8232-43EA-AF0C-7B35664DCF35}.Release|Win32.ActiveCfg = Release|Win32
+		{B8319F67-8232-43EA-AF0C-7B35664DCF35}.Release|Win32.Build.0 = Release|Win32
+		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Debug|Win32.Build.0 = Debug|Win32
+		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Release|Win32.ActiveCfg = Release|Win32
+		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
