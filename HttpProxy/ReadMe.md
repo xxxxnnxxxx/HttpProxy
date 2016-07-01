@@ -1,9 +1,15 @@
-1   ·ÃÎÊ²»Õı³£µÄÍøÕ¾£¿£¿£¿
-http://captcha.touclick.com/mouse/captcha
-https://ws.duoshuo.com:8201
-http://bdsp.x.jd.com/adx
-http://x.jd.com/file/images/logoCir40.gif
-https://mybank.icbc.com.cn/icbc/perbank/index.jsp
-http://web.qqvideo.tc.qq.com/bz.gif?0.5613137474814569
-http://x.jd.com/file/images/logo.jpg
-£²   Ç©ÃûÖ¤Êé»¹ÊÇ´æÔÚÎÊÌâ£¿£¿£¿£¿
+##é—®é¢˜
+- 1 è®¿é—®ä¸æ­£å¸¸çš„ç½‘ç«™ï¼Ÿï¼Ÿï¼Ÿ
+
+		http://captcha.touclick.com/mouse/captcha
+		https://ws.duoshuo.com:8201
+		http://bdsp.x.jd.com/adx
+		http://x.jd.com/file/images/logoCir40.gif
+		https://mybank.icbc.com.cn/icbc/perbank/index.jsp
+		http://web.qqvideo.tc.qq.com/bz.gif?0.5613137474814569
+		http://x.jd.com/file/images/logo.jpg
+
+- ï¼’ ç­¾åè¯ä¹¦è¿˜æ˜¯å­˜åœ¨é—®é¢˜ï¼Ÿï¼Ÿï¼Ÿï¼Ÿ
+
+##è¯´æ˜
+		é—®é¢˜å¯èƒ½å­˜åœ¨çš„ä½ç½®ï¼Œåœ¨libcurlè¯·æ±‚æœåŠ¡å™¨åè¿”å›ç å¤„ç†çš„ä¸åˆ°ä½
