@@ -1,1 +1,3 @@
 /debug/
+*.pdb
+*.ilk
