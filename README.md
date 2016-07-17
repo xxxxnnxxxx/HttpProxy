@@ -5,6 +5,7 @@
 - 2.后续的库需要补充，所以在导出函数中没有对SSL初始化的释放操作，但aseSSLConfig中已经有相应功能
 - 3.TrustRootCert和ExportRootCert函数必须在Hijack_Https函数调用后执行,因为Hijack_Https初始化了SSL库和生成了根证书的操作
 - 4.对于SSL部分，有部分功能欠缺，不能根据不同的url实现对CA签名，后续这部分需要补充.
+- 5.修复缺少stdint.h文件不能编译通过的问题，因为stdint.h包含在C99中，而vs2008使用C89库，所以造成文件缺失。快速的解决办法就是把高版本(vs2010以上)vc/include目录下的stdint.h拷贝到vc2008下的vc/include下就可以了
 
 ##API文档
 		PHS_HANDLE  __stdcall Create_ProxyHttpService(HTTPSERVICE_PARAMS *pHttpService_params);
