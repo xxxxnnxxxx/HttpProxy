@@ -20,7 +20,6 @@
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
@@ -29,3 +28,5 @@
 /文档/
 *.ncb
 *.suo
+/example/
+*.7z
