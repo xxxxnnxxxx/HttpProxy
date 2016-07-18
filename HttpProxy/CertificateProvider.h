@@ -20,4 +20,14 @@ public:
     static int          addCert2WindowsAuth(X509* x509, const char *pos);
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          exportx509(X509* x509,unsigned char *buf,int len);
+    static int          generate_server_crt(X509_REQ *x509,EVP_PKEY* pKey,char *url); //¸øÍøÕ¾Ç©ÃûµÄurl
+private:
+    int                 x509_certify(X509_STORE *ctx, char *CAfile, const EVP_MD *digest,
+                                    X509 *x, X509 *xca, EVP_PKEY *pkey,
+                                    STACK_OF(OPENSSL_STRING) *sigopts, char *serial,
+                                    int create, int days, int clrext, CONF *conf,
+                                    char *section, ASN1_INTEGER *sno, int reqfile);
+    ASN1_INTEGER *      x509_load_serial(char *CAfile, char *serialfile, int create);
+    BIGNUM *            load_serial(char *serialfile, int create, ASN1_INTEGER **retai);
+    int                 do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);
 };
