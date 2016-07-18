@@ -66,7 +66,7 @@ X509 * CertificateProvider::csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey)
 /*
 生成密钥对
 */
-EVP_PKEY * CertificateProvider::Generate_KeyPair(int numofbits)
+EVP_PKEY * CertificateProvider::Generate_KeyPair(int numofbits)/*numofbits好像没用*/
 {
     EVP_PKEY * pkey = EVP_PKEY_new();
     if (!pkey)
@@ -138,13 +138,52 @@ X509* CertificateProvider::CreateCertificate(EVP_PKEY * pkey, BOOL bRoot)
 }
 
 
-int CertificateProvider::generate_server_crt(X509_REQ *x509,EVP_PKEY* pKey,char *url)
+X509* CertificateProvider::generate_server_crt(EVP_PKEY* pKey,char *url)
 {
-    int ret=0;
+    X509 * x509 = X509_new();
+    if (!x509)
+    {
+        printf("Unable to create X509 structure.\n");
+        return NULL;
+    }
+
+    ASN1_INTEGER* aserial = NULL;
+    aserial = M_ASN1_INTEGER_new();
+    rand_serial(NULL, aserial);
+    X509_set_serialNumber(x509, aserial);
+
+    X509_gmtime_adj(X509_get_notBefore(x509), 0);
+    X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
+
+    X509_set_pubkey(x509, pKey);
+
+    X509_NAME * name = X509_get_subject_name(x509);
+
+    /*
+    C   = country
+    ST  = state
+    L   = locality
+    O   = organisation
+    OU  = organisational unit
+    CN  = common name
+    */
+    X509_NAME_add_entry_by_txt(name, "C", MBSTRING_ASC, (unsigned char *)"CN", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "ST", MBSTRING_ASC, (unsigned char*)"Beijing", -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)url, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)url, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)url, -1, -1, 0);
+
+    X509_set_issuer_name(x509, name);
+
     
+    if (!X509_sign(x509, pKey, EVP_sha1()))
+    {
+        printf("Error signing certificate.\n");
+        X509_free(x509);
+        return NULL;
+    }
 
-
-    return ret;
+    return x509;
 }
 
 /*
@@ -256,6 +295,39 @@ int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
 
 
 ////private
+
+static int callb(int ok, X509_STORE_CTX *ctx)
+{
+    int err;
+    X509 *err_cert;
+
+    /*
+     * it is ok to use a self signed certificate This case will catch both
+     * the initial ok == 0 and the final ok == 1 calls to this function
+     */
+    err = X509_STORE_CTX_get_error(ctx);
+    if (err == X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)
+        return 1;
+
+    /*
+     * BAD we should have gotten an error.  Normally if everything worked
+     * X509_STORE_CTX_get_error(ctx) will still be set to
+     * DEPTH_ZERO_SELF_....
+     */
+    if (ok) {
+  /*      BIO_printf(bio_err,
+                   "error with certificate to be certified - should be self signed\n");*/
+        return 0;
+    } else {
+        err_cert = X509_STORE_CTX_get_current_cert(ctx);
+        //print_name(bio_err, NULL, X509_get_subject_name(err_cert), 0);
+        //BIO_printf(bio_err,
+        //           "error with certificate - error %d at depth %d\n%s\n", err,
+        //           X509_STORE_CTX_get_error_depth(ctx),
+        //           X509_verify_cert_error_string(err));
+        return 1;
+    }
+}
 BIGNUM *CertificateProvider::load_serial(char *serialfile, int create, ASN1_INTEGER **retai)
 {
     BIO *in = NULL;
@@ -303,8 +375,7 @@ err:
 
 #undef BSIZE
 #define BSIZE 256
-int save_serial(char *serialfile, char *suffix, BIGNUM *serial,
-                ASN1_INTEGER **retai)
+int CertificateProvider::save_serial(char *serialfile, char *suffix, BIGNUM *serial,ASN1_INTEGER **retai)
 {
     char buf[1][BSIZE];
     BIO *out = NULL;
@@ -353,7 +424,7 @@ err:
     return (ret);
 }
 
-int rotate_serial(char *serialfile, char *new_suffix, char *old_suffix)
+int CertificateProvider::rotate_serial(char *serialfile, char *new_suffix, char *old_suffix)
 {
     char buf[5][BSIZE];
     int i, j;
@@ -434,7 +505,7 @@ end:
     BN_free(serial);
     return bs;
 }
-int pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
+int CertificateProvider::pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
 {
     int rv;
     char *stmp, *vtmp = NULL;
@@ -451,8 +522,7 @@ int pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
     return rv;
 }
 
- int do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey,
-                        const EVP_MD *md, STACK_OF(OPENSSL_STRING) *sigopts)
+int CertificateProvider::do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP_MD *md, STACK_OF(OPENSSL_STRING) *sigopts)
 {
     EVP_PKEY_CTX *pkctx = NULL;
     int i;
@@ -480,12 +550,12 @@ int pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
     EVP_MD_CTX_destroy(mctx);
     return rv > 0 ? 1 : 0;
 }
-int CertificateProvider::x509_certify(X509_STORE *ctx, char *CAfile, const EVP_MD *digest,
+int CertificateProvider::x509_certify(X509_STORE *ctx, char *CAfile/*NULL*/, const EVP_MD *digest/*NULL*/,
                         X509 *x, X509 *xca, EVP_PKEY *pkey,
-                        STACK_OF(OPENSSL_STRING) *sigopts,
-                        char *serialfile, int create,
+                        STACK_OF(OPENSSL_STRING) *sigopts/*NULL*/,
+                        char *serialfile/*NULL*/, int create/*0*/,
                         int days, int clrext, CONF *conf, char *section,
-                        ASN1_INTEGER *sno, int reqfile)
+                        ASN1_INTEGER *sno, int reqfile/*0*/)
 {
     int ret = 0;
     ASN1_INTEGER *bs = NULL;
@@ -497,7 +567,6 @@ int CertificateProvider::x509_certify(X509_STORE *ctx, char *CAfile, const EVP_M
     EVP_PKEY_copy_parameters(upkey, pkey);
 
     if (!X509_STORE_CTX_init(&xsc, ctx, x, NULL)) {
-    //    BIO_printf(bio_err, "Error initialising X509 store\n");
         goto end;
     }
     if (sno)

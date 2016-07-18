@@ -130,3 +130,68 @@ BOOL __stdcall ExportRootCert(SCG_HANDLE handle,unsigned char *buf, int *len)
     BaseSSLConfig* pBaseSSLConfig = HJH_HANLDE2BaseSSLConfig(handle);
     return pBaseSSLConfig->ExportRootCert(buf,len);
 }
+
+
+#ifdef _DEBUG
+int __stdcall Unittest()
+{
+    int ret=0;
+    EVP_PKEY*pKey=CertificateProvider::Generate_KeyPair(0);
+    X509* x509_root=CertificateProvider::CreateCertificate(pKey,TRUE);
+
+    if(x509_root!=NULL)
+    {
+        unsigned char buf[1024*5]={0};
+        int len=CertificateProvider::exportx509(x509_root,buf,1024*5);
+
+        HANDLE hFile=::CreateFileA("d:\\root.crt",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+        if(hFile!=NULL)
+        {
+            DWORD dwWrited=0;
+            if(::WriteFile(hFile,buf,len,&dwWrited,NULL))
+            {
+
+            }
+
+            ::CloseHandle(hFile);
+        }
+    }
+
+    EVP_PKEY*pKey_server=CertificateProvider::Generate_KeyPair(0);
+    X509* x509_server=CertificateProvider::generate_server_crt(pKey_server,"*.baidu.com");
+
+    X509_STORE *ctx = NULL;
+    ctx = X509_STORE_new();
+
+
+    ASN1_INTEGER* aserial = NULL;
+    aserial = M_ASN1_INTEGER_new();
+    CertificateProvider::rand_serial(NULL, aserial);
+    if (!CertificateProvider::x509_certify(ctx, NULL, NULL, x509_server, x509_root,
+                                            pKey, NULL,
+                                            NULL, 0, 30, NULL,
+                                            NULL, NULL, aserial, 1))
+    {
+        unsigned char buf[1024*5]={0};
+        int len=CertificateProvider::exportx509(x509_server,buf,1024*5);
+
+        HANDLE hFile=::CreateFileA("d:\\ss.crt",GENERIC_WRITE,FILE_SHARE_READ,NULL,OPEN_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+        if(hFile!=NULL)
+        {
+            DWORD dwWrited=0;
+            if(::WriteFile(hFile,buf,len,&dwWrited,NULL))
+            {
+            
+            }
+
+            ::CloseHandle(hFile);
+        }
+    }
+    else
+    {
+        MessageBoxA(NULL,"faild","msg",MB_OK);
+    }
+
+    return ret;
+}
+#endif

@@ -20,5 +20,9 @@ extern "C" HTTPCORE_API SCG_HANDLE  __stdcall Hijack_Https(PHS_HANDLE handle);  
 //extern "C" HTTPCORE_API BOOL        __stdcall Dishijack_Https(SCG_HANDLE handle);   //·Å¹ýhttps
 extern "C" HTTPCORE_API BOOL        __stdcall TrustRootCert(SCG_HANDLE handle);
 extern "C" HTTPCORE_API BOOL        __stdcall ExportRootCert(/*IN*/SCG_HANDLE handle,/*OUT*/unsigned char *buf,/*IN/OUT*/int *len);
+
+#ifdef _DEBUG
+extern "C" HTTPCORE_API int         __stdcall Unittest();
+#endif
 //extern "C" HTTPCORE_API BOOL        __stdcall ResetCert(SCG_HANDLE handle);
 #endif

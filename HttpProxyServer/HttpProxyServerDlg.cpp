@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CHttpProxyServerDlg, CDialog)
     ON_WM_CLOSE()
     ON_BN_CLICKED(IDC_BT_CONFIG,OnConfig)
 	//}}AFX_MSG_MAP
+    ON_BN_CLICKED(IDC_BUTTON1, &CHttpProxyServerDlg::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -232,4 +233,14 @@ void CHttpProxyServerDlg::OnCancel()
 void CHttpProxyServerDlg::OnClose()
 {
     this->EndDialog(0);
+}
+
+
+
+//≤‚ ‘
+void CHttpProxyServerDlg::OnBnClickedButton1()
+{
+#ifdef _DEBUG
+    Unittest();
+#endif
 }
