@@ -103,7 +103,7 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * url,int 
         if(::IsBadReadPtr(url,len))
             return NULL;
 
-        if(*(url+len-1)!='\0')
+        if(*(url+len)!='\0')
             return NULL;
     }
     
