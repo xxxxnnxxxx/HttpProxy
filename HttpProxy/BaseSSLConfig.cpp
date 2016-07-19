@@ -67,11 +67,11 @@ BaseSSLConfig* BaseSSLConfig::CreateInstance()
 
 BOOL BaseSSLConfig::CreateRootCert()
 {
-    m_rootkeypair = CertificateProvider::Generate_KeyPair(NUMOfKEYBITS);
+    m_rootkeypair = CertificateProvider::generate_keypair(NUMOfKEYBITS);
     if (m_rootkeypair == NULL)
         return FALSE;
 
-    m_rootcert = CertificateProvider::CreateCertificate(m_rootkeypair, TRUE);
+    m_rootcert = CertificateProvider::generate_certificate(m_rootkeypair, NULL,0,TRUE);
     if (m_rootcert == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
         return FALSE;
 

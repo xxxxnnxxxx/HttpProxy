@@ -136,8 +136,8 @@ BOOL __stdcall ExportRootCert(SCG_HANDLE handle,unsigned char *buf, int *len)
 int __stdcall Unittest()
 {
     int ret=0;
-    EVP_PKEY*pKey=CertificateProvider::Generate_KeyPair(0);
-    X509* x509_root=CertificateProvider::CreateCertificate(pKey,TRUE);
+    EVP_PKEY*pKey=CertificateProvider::generate_keypair(2048);
+    X509* x509_root=CertificateProvider::generate_certificate(pKey,NULL,0,TRUE);
 
     if(x509_root!=NULL)
     {
@@ -157,20 +157,12 @@ int __stdcall Unittest()
         }
     }
 
-    EVP_PKEY*pKey_server=CertificateProvider::Generate_KeyPair(0);
-    X509* x509_server=CertificateProvider::generate_server_crt(pKey_server,"*.baidu.com");
-
-    X509_STORE *ctx = NULL;
-    ctx = X509_STORE_new();
+    EVP_PKEY*pKey_server=CertificateProvider::generate_keypair(2048);
+    X509* x509_server=CertificateProvider::generate_certificate(pKey_server,"*.baidu.com",12,FALSE);
 
 
-    ASN1_INTEGER* aserial = NULL;
-    aserial = M_ASN1_INTEGER_new();
-    CertificateProvider::rand_serial(NULL, aserial);
-    if (!CertificateProvider::x509_certify(ctx, NULL, NULL, x509_server, x509_root,
-                                            pKey, NULL,
-                                            NULL, 0, 30, NULL,
-                                            NULL, NULL, aserial, 1))
+
+    if(CertificateProvider::x509_certify(x509_server,x509_root,pKey))
     {
         unsigned char buf[1024*5]={0};
         int len=CertificateProvider::exportx509(x509_server,buf,1024*5);
