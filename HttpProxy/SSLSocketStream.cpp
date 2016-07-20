@@ -45,7 +45,8 @@ int SSLSocketStream::init(void *buf,int len)
 {
     SSL_METHOD *method;
     int ret=0;
-    method = (SSL_METHOD*)SSLv23_method();
+    //method = (SSL_METHOD*)SSLv23_method();
+    method=   (SSL_METHOD*)TLSv1_2_method();
     m_ctx = SSL_CTX_new(method);
     if(m_ctx!=NULL){
         SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
