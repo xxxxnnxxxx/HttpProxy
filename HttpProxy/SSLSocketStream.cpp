@@ -14,13 +14,18 @@ extern "C" {
 #include "BaseSSLConfig.h"
 #include "CommonFuncs.h"
 #include "SSLSocketStream.h"
+#include "CertificateProvider.h"
 
 extern BaseSSLConfig* g_BaseSSLConfig;
 
 SSLSocketStream::SSLSocketStream(char**pprecv_buf, DWORD *plen_recv_buf, char**ppsend_buf, DWORD *plen_send_buf):
     BaseSocketStream(pprecv_buf,plen_recv_buf,ppsend_buf,plen_send_buf)
 {
-    init();
+    m_ctx=NULL;
+    m_x509=NULL;
+    m_keypair=NULL;
+    m_send_bio=NULL;
+    m_recv_bio=NULL;
 }
 SSLSocketStream::~SSLSocketStream() {
     uninit();   //释放
@@ -36,21 +41,90 @@ char* SSLSocketStream::_classname(char *buf, DWORD len)
 /*
 初始化操作，所有的SSL初始化在这个函数中
 */
-void SSLSocketStream::init()
+int SSLSocketStream::init(void *buf,int len)
 {
+    SSL_METHOD *method;
+    int ret=0;
+    method = (SSL_METHOD*)SSLv23_method();
+    m_ctx = SSL_CTX_new(method);
+    if(m_ctx!=NULL){
+        SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
+        SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
+    }
+    else
+        return 0;
 
-    m_ssl = SSL_new(g_BaseSSLConfig->context());//这个地方的问题比较严重？？？因为g_BaseSSLConfig可能存在为空的情况
-    m_send_bio = BIO_new(BIO_s_mem());
-    m_recv_bio = BIO_new(BIO_s_mem());
-    SSL_set_bio(m_ssl, m_recv_bio, m_send_bio);
-    SSL_set_accept_state(m_ssl);
+
+    m_ssl = SSL_new(m_ctx);//这个地方的问题比较严重？？？因为g_BaseSSLConfig可能存在为空的情况
+
+    if (m_ssl != NULL)
+    {
+        //创建证书
+       m_keypair= CertificateProvider::generate_keypair(2048);
+       m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len,FALSE);
+
+        if (m_x509!=NULL) {
+
+            if (SSL_CTX_use_PrivateKey(m_ctx, m_keypair) <= 0)
+            {
+                ret=0;
+                goto tag;
+            }
+            if (SSL_CTX_use_certificate(m_ctx, m_x509) <= 0)
+            {
+                ret=0;
+                goto tag;
+            }
+
+            if (!SSL_CTX_check_private_key(m_ctx))
+            {
+                ret=0;
+                goto tag;
+            }
+
+
+            m_send_bio = BIO_new(BIO_s_mem());
+            m_recv_bio = BIO_new(BIO_s_mem());
+            SSL_set_bio(m_ssl, m_recv_bio, m_send_bio);
+            SSL_set_accept_state(m_ssl);
+
+            //TODO:使用根证书进行签名
+            g_BaseSSLConfig->CA(m_x509);
+
+            //TODO:添加证书到系统证书列表中
+            CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
+
+#if 0
+            CertificateProvider::saveX509tofile(m_x509,"c:\\mm.crt");
+#endif
+            ret=1;
+        }
+    }
+
+tag:
+    return ret;
 }
 
 void SSLSocketStream::uninit()
 {
-
     SSL_shutdown(m_ssl);
     SSL_free(m_ssl);
+    if(m_ctx!=NULL)
+    {
+        SSL_CTX_free(m_ctx);
+        m_ctx=NULL;
+    }
+    if(m_x509!=NULL)
+    {
+        X509_free(m_x509);
+        m_x509=NULL;
+    }
+
+    if(m_keypair!=NULL)
+    {
+        EVP_PKEY_free(m_keypair);
+        m_keypair=NULL;
+    }
     BIO_free(m_send_bio);
     BIO_free(m_recv_bio);
 }

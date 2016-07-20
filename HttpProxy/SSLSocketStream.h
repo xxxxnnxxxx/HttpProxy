@@ -25,10 +25,11 @@ public:
     ~SSLSocketStream();
 
 private:
-    void            init();
+    
     void            uninit();  //∑¥≥ı ºªØ
     char *          get_OpenSSL_Error();
 public:
+    int             init(void*url,int len);
     virtual int     write(void *buf,DWORD len);
     virtual int     read(void *buf,DWORD Len);
     virtual char *  _classname(char *buf, DWORD len);
@@ -37,6 +38,9 @@ private:
     BIO *m_send_bio;
     BIO *m_recv_bio;
     SSL * m_ssl;
+    SSL_CTX *m_ctx;
+    EVP_PKEY *m_keypair;
+    X509 *m_x509;
 };
 
 #endif

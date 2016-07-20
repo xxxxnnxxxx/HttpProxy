@@ -52,7 +52,8 @@ BaseHTTPRequestHandler::BaseHTTPRequestHandler(HTTPSERVICE_PARAMS *pHttpService_
 
 
     //这个地方可以判断是否为SSH服务
-    if (m_pHttpService_Params->bSSH) {
+    if (m_pHttpService_Params->bSSH) 
+    {
         m_pBaseSockeStream = new SSLSocketStream(&m_precv_buf, &m_len_recvbuf, &m_pHttpSession->m_pSendbuf, &m_pHttpSession->m_SizeofSendbuf);
     }
     else
@@ -287,7 +288,11 @@ void BaseHTTPRequestHandler::connect_intercept()
     
     //
     m_pBaseSockeStream = new SSLSocketStream(&m_precv_buf, &m_len_recvbuf, &m_pHttpSession->m_pSendbuf, &m_pHttpSession->m_SizeofSendbuf);
-
+    
+    if(!m_pBaseSockeStream->init(http_items.m_host,strlen(http_items.m_host))) //m_uri可能不是要签名的地址
+    {
+        return;
+    }
     //响应CONNECT消息
     char temp[1024] = { 0 };
     wsprintfA(temp, "%s %d %s\r\n\r\n", "HTTP/1.1", 200, "Connection Established");

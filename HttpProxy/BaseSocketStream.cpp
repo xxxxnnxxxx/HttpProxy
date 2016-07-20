@@ -22,6 +22,12 @@ BaseSocketStream::~BaseSocketStream()
     
 }
 
+//不需要处理
+int BaseSocketStream::init(void* buf,int len)
+{
+    return 1;
+}
+
 //返回类名字
 char * BaseSocketStream::_classname(char *buf, DWORD len)
 {

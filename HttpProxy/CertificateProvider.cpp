@@ -165,12 +165,12 @@ int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, int le
     int ret = 0;
     int error = 0;
     HCERTSTORE hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-    hRootCertStore = CertOpenStore(
-        CERT_STORE_PROV_SYSTEM,
-        0,
-        NULL,
-        CERT_SYSTEM_STORE_LOCAL_MACHINE,
-        pos);
+    //hRootCertStore = CertOpenStore(
+    //    CERT_STORE_PROV_SYSTEM,
+    //    0,
+    //    NULL,
+    //    CERT_SYSTEM_STORE_LOCAL_MACHINE,
+    //    pos);
     if (hRootCertStore != NULL)
     {
         //读取证书内容
@@ -210,12 +210,12 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
     len_x509 = i2d_X509(x509, &buf_x509);
     if (len_x509 > 0) {
         HCERTSTORE hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-        hRootCertStore = CertOpenStore(
-            CERT_STORE_PROV_SYSTEM,
-            0,
-            NULL,
-            CERT_SYSTEM_STORE_LOCAL_MACHINE,
-            pos);
+        //hRootCertStore = CertOpenStore(
+        //    CERT_STORE_PROV_SYSTEM,
+        //    0,
+        //    NULL,
+        //    CERT_SYSTEM_STORE_LOCAL_MACHINE,
+        //    pos);
         if (hRootCertStore != NULL)
         {
             //读取证书内容
@@ -269,6 +269,44 @@ int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
     if(buf_x509!=NULL)
         OPENSSL_free(buf_x509);
     return len_x509;
+}
+
+int CertificateProvider::saveX509tofile(X509* x509,char *path)
+{
+    unsigned char * buf=NULL;
+    HANDLE hFile=INVALID_HANDLE_VALUE;
+    int ret=0;
+    DWORD dwWrited=0;
+    int len=exportx509(x509,NULL,0);
+    if(len<=0)
+        return 0;
+
+    buf=(unsigned char*)malloc(len);
+    memset(buf,0,len);
+
+    len=exportx509(x509,buf,len);
+
+    hFile=::CreateFileA(path,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+    if(hFile!=INVALID_HANDLE_VALUE)
+    {
+        BOOL bRet=::WriteFile(hFile,buf,len,&dwWrited,NULL);
+        if(bRet)
+            ret=len;
+        else
+            ret=0;
+    }
+
+    if(hFile!=INVALID_HANDLE_VALUE)
+        CloseHandle(hFile);
+
+    if(buf!=NULL)
+    {
+        free(buf);
+        buf=NULL;
+    }
+
+    return ret;
+    
 }
 
 

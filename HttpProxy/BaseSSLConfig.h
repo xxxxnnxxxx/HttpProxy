@@ -38,17 +38,16 @@ public:
 public:
     BOOL        init_ssl();
     void        uninit_ssl();
-    SSL_CTX *   context();
+    int         CA(X509*x509);  //ca签名
     ULONG       status() const { return m_status; }  //状态表所有的都是成功或完成
     BOOL        TrustRootCert();
     BOOL        ExportRootCert(unsigned char *buf,int *len);    //导出根证书
 private:
-    BOOL CreateRootCert(); //生成根证书
+    BOOL        CreateRootCert(); //生成根证书
 private:
-    ULONG   m_status;
-    SSL_CTX *m_ctx;
-    X509 *m_rootcert;   //根证书
-    EVP_PKEY *m_rootkeypair;    //根密钥对
+    ULONG       m_status;
+    X509        *m_rootcert;   //根证书
+    EVP_PKEY    *m_rootkeypair;    //根密钥对
     static BaseSSLConfig* instance;
     //
     LIST_ENTRY m_HeaderofCertList;  //证书链表头

@@ -88,14 +88,6 @@ BOOL BaseSSLConfig::TrustRootCert()
     return FALSE;
 }
 
-/*
-返回上下文
-*/
-SSL_CTX * BaseSSLConfig::context()
-{
-    return m_ctx;
-}
-
 BOOL BaseSSLConfig::init_ssl()
 {
     BOOL bRet = FALSE;
@@ -117,38 +109,7 @@ BOOL BaseSSLConfig::init_ssl()
         SSL_load_error_strings();
         SSL_library_init();
 
-
-        /*注意*/
-        //这个地方可以移动到SSLSocketStream中去，就可以区分，
-        //暂时不移动了，因为还没有完成相关的证书签名的过程
-        SSL_METHOD *method;
-        method = (SSL_METHOD*)SSLv23_method();
-        m_ctx = SSL_CTX_new(method);
-        if (m_ctx != NULL)
-        {
-            SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
-            SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
-
-            if (CreateRootCert()) {
-
-                if (SSL_CTX_use_PrivateKey(m_ctx, m_rootkeypair) <= 0)
-                {
-                    break;
-                }
-                if (SSL_CTX_use_certificate(m_ctx, m_rootcert) <= 0)
-                {
-                    break;
-                }
-
-                if (!SSL_CTX_check_private_key(m_ctx))
-                {
-                    break;
-                }
-            }
-        }
-        else break;/*这个地方应当释放不正确的情况*/
-
-        bRet = TRUE;
+        bRet=CreateRootCert();
     } while (0);
 
     if (bRet) {
@@ -159,8 +120,6 @@ BOOL BaseSSLConfig::init_ssl()
 
 void BaseSSLConfig::uninit_ssl()
 {
-    SSL_CTX_free(m_ctx);
-    m_ctx = NULL;
 
     CRYPTO_set_locking_callback(NULL);
     CRYPTO_set_dynlock_create_callback(NULL);
@@ -182,6 +141,18 @@ void BaseSSLConfig::uninit_ssl()
         number_of_locks = 0;
     }
 
+    if(m_rootcert!=NULL)
+    {
+        X509_free(m_rootcert);
+        m_rootcert=NULL;
+    }
+
+    if(m_rootkeypair!=NULL)
+    {
+        EVP_PKEY_free(m_rootkeypair);
+        m_rootkeypair=NULL;
+    }
+
     m_status = STATUS_UNINIT;
 }
 
@@ -197,4 +168,12 @@ BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf,int *len)
         *len=ret;
 
     return (BOOL)ret;
+}
+
+/*签名*/
+int BaseSSLConfig::CA(X509*x509)
+{
+    int ret=0;
+    ret=CertificateProvider::x509_certify(x509,m_rootcert,m_rootkeypair);
+    return ret;
 }

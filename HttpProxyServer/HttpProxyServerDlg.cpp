@@ -197,6 +197,7 @@ void CHttpProxyServerDlg::OnConfig()
     if (m_hProxyHttpService != NULL) {
         m_hSSLConfigHandle = Hijack_Https(m_hProxyHttpService);
         if (m_hSSLConfigHandle != NULL) {
+            TrustRootCert(m_hSSLConfigHandle);
             m_state = STATE_STOP;
         }
 

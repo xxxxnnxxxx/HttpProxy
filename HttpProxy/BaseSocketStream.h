@@ -18,6 +18,7 @@ public:
         BSS_RET_UNKNOWN,
     };
 public:
+    virtual int init(void* buf,int len);        //其实对于BaseSocketStream没用啊，为了统一SSLSocketStream
     virtual int write(void *buf,DWORD len);    //写入数据
     virtual int read(void *buf,DWORD len);     //读取数据
     virtual char * _classname(char *buf, DWORD len);

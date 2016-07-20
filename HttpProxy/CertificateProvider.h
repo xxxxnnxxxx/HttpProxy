@@ -19,6 +19,7 @@ public:
     static int          addCert2WindowsAuth(X509* x509, const char *pos);  
     static int          exportx509(X509* x509,unsigned char *buf,int len);
     static int          x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca); /*CAÇ©Ãû*/
+    static int          saveX509tofile(X509* x509,char *path);
 private:
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);
