@@ -242,16 +242,23 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
     return ret;
 }
 
+/*buf=NULL || len==0 返回需要的内存空间长度*/
 int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
 {
     int len_x509=0;
     unsigned char *buf_x509=NULL;
-    if(buf==NULL)
-        return 0;
+
     //加密x509 to DER
     len_x509 = i2d_X509(x509, &buf_x509);
     if(len_x509<0)
         return 0;
+
+    if(buf==NULL || len==0)
+    {
+        if(buf_x509!=NULL)
+            OPENSSL_free(buf_x509);
+        return len_x509;
+    }
 
     if(::IsBadReadPtr(buf,len)){
         OPENSSL_free(buf_x509);
@@ -259,7 +266,8 @@ int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
     }
 
     memcpy_s(buf,len,buf_x509,((len>len_x509)?len_x509:len));
-    
+    if(buf_x509!=NULL)
+        OPENSSL_free(buf_x509);
     return len_x509;
 }
 
