@@ -52,6 +52,32 @@ int SSLSocketStream::init(void *buf,int len)
         SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
         SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
         SSL_CTX_set_cipher_list(m_ctx, "TLSv1.2:TLSv1:SSLv3:!SSLv2:HIGH:!MEDIUM:!LOW");
+
+
+        m_keypair= CertificateProvider::generate_keypair(2048);
+        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len,FALSE);
+
+        g_BaseSSLConfig->CA(m_x509);
+        CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
+
+
+        if (SSL_CTX_use_PrivateKey(m_ctx, m_keypair) <= 0)
+        {
+            ret=0;
+            goto tag;
+        }
+        if (SSL_CTX_use_certificate(m_ctx, m_x509) <= 0)
+        {
+            ret=0;
+            goto tag;
+        }
+
+        if (!SSL_CTX_check_private_key(m_ctx))
+        {
+            ret=0;
+            goto tag;
+        }
+
     }
     else
         return 0;
@@ -61,49 +87,43 @@ int SSLSocketStream::init(void *buf,int len)
 
     if (m_ssl != NULL)
     {
-        //创建证书
-       m_keypair= CertificateProvider::generate_keypair(2048);
-       m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len,FALSE);
-
-        if (m_x509!=NULL) {
-
-            //TODO:使用根证书进行签名
-            g_BaseSSLConfig->CA(m_x509);
-
-            //TODO:添加证书到系统证书列表中
-            CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
-
-            if (SSL_CTX_use_PrivateKey(m_ctx, m_keypair) <= 0)
-            {
-                ret=0;
-                goto tag;
-            }
-            if (SSL_CTX_use_certificate(m_ctx, m_x509) <= 0)
-            {
-                ret=0;
-                goto tag;
-            }
-
-            if (!SSL_CTX_check_private_key(m_ctx))
-            {
-                ret=0;
-                goto tag;
-            }
-
-
             m_send_bio = BIO_new(BIO_s_mem());
             m_recv_bio = BIO_new(BIO_s_mem());
             SSL_set_bio(m_ssl, m_recv_bio, m_send_bio);
             SSL_set_accept_state(m_ssl);
-
-#if 0
-            CertificateProvider::saveX509tofile(m_x509,"c:\\mm.crt");
-#endif
             ret=1;
-        }
+    }
+    else{
+        ret=0;
     }
 
 tag:
+    if(ret==0)
+    {
+        if(m_ctx!=NULL)
+        {
+            SSL_CTX_free(m_ctx);
+            m_ctx=NULL;
+        }
+
+        if(m_ssl!=NULL)
+        {
+            SSL_free(m_ssl);
+            m_ssl=NULL;
+        }
+
+        if(m_send_bio!=NULL)
+        {
+            BIO_free(m_send_bio);
+            m_send_bio=NULL;
+        }
+
+        if(m_recv_bio!=NULL)
+        {
+            BIO_free(m_recv_bio);
+            m_recv_bio=NULL;
+        }
+    }
     return ret;
 }
 

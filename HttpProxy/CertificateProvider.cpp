@@ -7,6 +7,7 @@
 #include <openssl/buffer.h>
 #include <openssl/err.h>
 #include <openssl\evp.h>
+#include <stdio.h>
 
 
 #undef POSTFIX
@@ -52,6 +53,29 @@ error:
 
     return ret;
 }
+////////////////////
+X509 *CertificateProvider::load_cert(const char *file, int format)
+{
+    X509 *x = NULL;
+    FILE *fp=NULL;
+    errno_t err;
+
+    err=fopen_s(&fp,file,"rb");
+    if(err!=0||fp==NULL)
+        return NULL;
+    
+
+    if (format == FORMAT_ASN1)
+        x = d2i_X509_fp(fp,NULL);
+    else if (format == FORMAT_PEM)
+        x = PEM_read_X509(fp,NULL,NULL,NULL);
+    
+    fclose(fp);
+    return (x);
+}
+
+
+////////////////////
 
 /*
 根据csr文件生成crt文件
@@ -148,7 +172,6 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * url,int 
     
     if (!X509_sign(x509, pkey, EVP_sha256()))
     {
-        printf("Error signing certificate.\n");
         X509_free(x509);
         return NULL;
     }
@@ -165,12 +188,6 @@ int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, int le
     int ret = 0;
     int error = 0;
     HCERTSTORE hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-    //hRootCertStore = CertOpenStore(
-    //    CERT_STORE_PROV_SYSTEM,
-    //    0,
-    //    NULL,
-    //    CERT_SYSTEM_STORE_LOCAL_MACHINE,
-    //    pos);
     if (hRootCertStore != NULL)
     {
         //读取证书内容
@@ -210,12 +227,6 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
     len_x509 = i2d_X509(x509, &buf_x509);
     if (len_x509 > 0) {
         HCERTSTORE hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-        //hRootCertStore = CertOpenStore(
-        //    CERT_STORE_PROV_SYSTEM,
-        //    0,
-        //    NULL,
-        //    CERT_SYSTEM_STORE_LOCAL_MACHINE,
-        //    pos);
         if (hRootCertStore != NULL)
         {
             //读取证书内容
