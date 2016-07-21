@@ -141,12 +141,12 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * url,int 
         X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)url, -1, -1, 0);
         X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)url, -1, -1, 0);
     }
-
-
     X509_set_issuer_name(x509, name);
+    
+    
 
     
-    if (!X509_sign(x509, pkey, EVP_sha1()))
+    if (!X509_sign(x509, pkey, EVP_sha256()))
     {
         printf("Error signing certificate.\n");
         X509_free(x509);

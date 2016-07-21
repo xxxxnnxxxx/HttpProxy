@@ -57,7 +57,7 @@ int SSLSocketStream::init(void *buf,int len)
         return 0;
 
 
-    m_ssl = SSL_new(m_ctx);//这个地方的问题比较严重？？？因为g_BaseSSLConfig可能存在为空的情况
+    m_ssl = SSL_new(m_ctx);
 
     if (m_ssl != NULL)
     {
@@ -66,6 +66,12 @@ int SSLSocketStream::init(void *buf,int len)
        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len,FALSE);
 
         if (m_x509!=NULL) {
+
+            //TODO:使用根证书进行签名
+            g_BaseSSLConfig->CA(m_x509);
+
+            //TODO:添加证书到系统证书列表中
+            CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
 
             if (SSL_CTX_use_PrivateKey(m_ctx, m_keypair) <= 0)
             {
@@ -89,12 +95,6 @@ int SSLSocketStream::init(void *buf,int len)
             m_recv_bio = BIO_new(BIO_s_mem());
             SSL_set_bio(m_ssl, m_recv_bio, m_send_bio);
             SSL_set_accept_state(m_ssl);
-
-            //TODO:使用根证书进行签名
-            g_BaseSSLConfig->CA(m_x509);
-
-            //TODO:添加证书到系统证书列表中
-            CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
 
 #if 0
             CertificateProvider::saveX509tofile(m_x509,"c:\\mm.crt");
