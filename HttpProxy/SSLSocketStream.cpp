@@ -51,6 +51,7 @@ int SSLSocketStream::init(void *buf,int len)
     if(m_ctx!=NULL){
         SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
         SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
+        SSL_CTX_set_cipher_list(m_ctx, "TLSv1.2:TLSv1:SSLv3:!SSLv2:HIGH:!MEDIUM:!LOW");
     }
     else
         return 0;

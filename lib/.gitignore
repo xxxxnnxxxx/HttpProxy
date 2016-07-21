@@ -1,3 +1,6 @@
 pcre2_16d.lib
 pcre2_8r.lib
 pcre2_8d.lib
+libcurl.lib
+*.pdb
+zlib_a.lib
