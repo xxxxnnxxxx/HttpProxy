@@ -140,7 +140,7 @@ int __stdcall Unittest()
     X509* x509_root=CertificateProvider::generate_certificate(pKey,NULL,0,TRUE);
     PKCS12*pkcs12=CertificateProvider::x509topkcs12(x509_root,pKey,"xxxxnnxxxx",NULL);
 
-    CertificateProvider::addCert2WindowsAuth(pkcs12,"ROOT");
+    CertificateProvider::addCert2WindowsAuth(pkcs12,"ROOT",L"123456");
 
     if(x509_root!=NULL)
     {
