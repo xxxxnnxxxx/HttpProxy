@@ -253,6 +253,45 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
     return ret;
 }
 
+int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar_t*password)
+{
+    int ret=0;
+    int len_pkcs12=0;
+    unsigned char* buf_pkcs12=NULL;
+    int error=0;
+    CRYPT_DATA_BLOB cdb;
+    HCERTSTORE hImportCertStore=NULL;
+    HCERTSTORE hRootCertStore=NULL;
+
+
+    len_pkcs12 = i2d_PKCS12(pkcs12, &buf_pkcs12);
+    if (buf_pkcs12 > 0)
+    {
+
+        cdb.cbData=len_pkcs12;
+        cdb.pbData=buf_pkcs12;
+        hImportCertStore=PFXImportCertStore(&cdb,password,CRYPT_EXPORTABLE);
+        
+        //读取证书内容
+        if(hImportCertStore)
+        {
+            PCCERT_CONTEXT pCertContext = NULL;
+            pCertContext= CertEnumCertificatesInStore(hImportCertStore,pCertContext);
+
+            if(pCertContext!=NULL)
+            {
+                hRootCertStore = CertOpenSystemStoreA(NULL, pos);
+                CertAddCertificateContextToStore(hRootCertStore, pCertContext, CERT_STORE_ADD_REPLACE_EXISTING, NULL);
+            }
+        }
+        else
+            error=GetLastError();
+    }
+
+
+    return ret;
+}
+
 /*buf=NULL || len==0 返回需要的内存空间长度*/
 int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
 {
@@ -426,10 +465,20 @@ int CertificateProvider::x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca)
 }
 
 #define CPASS "123456"
-PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey)
+PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char* aname,X509*CA)
 {
     PKCS12* ppkcs12=NULL;
-    ppkcs12 = PKCS12_create(CPASS, "4x2n4x", pkey, x509, NULL,0,0, 0, 0, 0);
+    STACK_OF(X509) *cacertstack=NULL;
+
+    if(CA!=NULL)
+    {
+        cacertstack = sk_X509_new_null();
+        if(cacertstack!=NULL)
+        {
+            sk_X509_push(cacertstack, CA);
+        }
+    }
+    ppkcs12 = PKCS12_create(CPASS,aname , pkey, x509, cacertstack,0,0, 0, 0, 0);
     
     if(ppkcs12!=NULL)
     {

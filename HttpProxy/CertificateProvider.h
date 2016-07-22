@@ -25,11 +25,12 @@ public:
     static EVP_PKEY *   generate_keypair(int numofbits);  //生成密钥对
     static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char *pos);
     static int          addCert2WindowsAuth(X509* x509, const char *pos);  
+    static int          addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar_t*password);
     static int          exportx509(X509* x509,unsigned char *buf,int len);
     static int          x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca); /*CA签名*/
     static int          saveX509tofile(X509* x509,char *path);
     static int          is_certexist(char *url,int len,BOOL bRoot);
-    static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey);    //x509转为pkcs12
+    static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey,char* aname,X509*CA);    //x509转为pkcs12
 private:
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);
