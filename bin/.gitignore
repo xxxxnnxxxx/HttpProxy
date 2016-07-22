@@ -1,3 +1,5 @@
 *.pdb
 *.ilk
-/debug/
+HttpProxyServer.exe
+HttpProxyServer.ilk
+HttpProxyServer.pdb

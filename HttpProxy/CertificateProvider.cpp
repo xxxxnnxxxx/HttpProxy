@@ -464,8 +464,8 @@ int CertificateProvider::x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca)
     return ret;
 }
 
-#define CPASS "123456"
-PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char* aname,X509*CA)
+
+PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA)
 {
     PKCS12* ppkcs12=NULL;
     STACK_OF(X509) *cacertstack=NULL;
@@ -478,7 +478,7 @@ PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char* aname,
             sk_X509_push(cacertstack, CA);
         }
     }
-    ppkcs12 = PKCS12_create(CPASS,aname , pkey, x509, cacertstack,0,0, 0, 0, 0);
+    ppkcs12 = PKCS12_create(password,aname , pkey, x509, cacertstack,0,0, 0, 0, 0);
     
     if(ppkcs12!=NULL)
     {
