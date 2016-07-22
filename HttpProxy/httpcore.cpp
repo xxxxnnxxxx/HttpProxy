@@ -138,7 +138,9 @@ int __stdcall Unittest()
     int ret=0;
     EVP_PKEY*pKey=CertificateProvider::generate_keypair(2048);
     X509* x509_root=CertificateProvider::generate_certificate(pKey,NULL,0,TRUE);
-    PKCS12*pkcs12=CertificateProvider::x509topkcs12(x509_root,pKey);
+    PKCS12*pkcs12=CertificateProvider::x509topkcs12(x509_root,pKey,"xxxxnnxxxx",NULL);
+
+    CertificateProvider::addCert2WindowsAuth(pkcs12,"ROOT");
 
     if(x509_root!=NULL)
     {
