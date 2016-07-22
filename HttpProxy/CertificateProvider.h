@@ -8,6 +8,7 @@
  */
 #include <windows.h>
 #include <openssl/x509.h>
+#include <openssl/pkcs12.h>
 class CertificateProvider
 {
 public:
@@ -28,6 +29,7 @@ public:
     static int          x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca); /*CAÇ©Ãû*/
     static int          saveX509tofile(X509* x509,char *path);
     static int          is_certexist(char *url,int len,BOOL bRoot);
+    static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey);    //x509×ªÎªpkcs12
 private:
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);
