@@ -10,8 +10,6 @@
 #include <stdio.h>
 
 
-#undef POSTFIX
-#define POSTFIX ".srl"
 /*
 证书操作，这个地方没有写CA签名的过程，只是简单生成了一个证书
 */
