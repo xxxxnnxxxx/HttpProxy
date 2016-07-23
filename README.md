@@ -53,3 +53,6 @@
 ##补充说明
 		对于IE浏览器，可以通过在系统中添加信任证书的方式，使访问https网站无差别，但Firefox,Chrome都有问题，
 		是不是可以通过其他的方式解决？？
+
+##感谢
+		1)	Joe Klemencic's IMPORTPFX.exe的部分源代码

@@ -139,15 +139,22 @@ int __stdcall Unittest()
     EVP_PKEY*pKey=CertificateProvider::generate_keypair(2048);
     X509* x509_root=CertificateProvider::generate_certificate(pKey,"xxxxnnxxxx",10);
     PKCS12*pkcs12=CertificateProvider::x509topkcs12(x509_root,pKey,"123456","xxxxnnxxxx",NULL);
+    CertificateProvider::addCert2WindowsAuth(pkcs12,"ROOT",L"123456");
+    
+    PKCS12*pkcs12_tmp=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","ROOT","xxxxnnxxxx");
+    if(pkcs12_tmp!=NULL)
+    {
 
+    }
+
+    //
+    EVP_PKEY *pkey_tmp=NULL;
     X509*x509_tmp=NULL;
-    EVP_PKEY*kep_tmp=NULL;
     X509*CA=NULL;
 
+    CertificateProvider::pkcs12_getx509(pkcs12_tmp,"123456",6,&x509_tmp,&pkey_tmp,&CA);
 
-    CertificateProvider::pkcs12_getx509(pkcs12,"123456",6,&x509_tmp,&kep_tmp,&CA);
-
-   // CertificateProvider::addCert2WindowsAuth(pkcs12,"ROOT",L"123456");
+   
 
     if(x509_root!=NULL)
     {
