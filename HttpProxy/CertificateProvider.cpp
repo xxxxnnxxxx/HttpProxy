@@ -504,3 +504,147 @@ int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**
 
     return ret;
 }
+
+/*删除指定的证书*/
+void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername)
+{
+    HANDLE          hStoreHandle;
+    PCCERT_CONTEXT  pCertContext=NULL;   
+    PCCERT_CONTEXT  pDupCertContext; 
+
+    char pszNameString[256];
+    char pszIssuerString[256];
+    int iOK2Del=0;
+
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+        printf("The store was not opened.");
+    }
+
+    while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszIssuerString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!_stricmp(pszIssuer, pszIssuerString)){
+            if(!_stricmp(pszUsername ,pszNameString)){
+                iOK2Del=1;
+            }
+        } 
+
+        if(pszUsername == NULL){
+            iOK2Del = 1;
+        }
+
+        if(iOK2Del){
+            if(!(pDupCertContext = CertDuplicateCertificateContext(pCertContext))){
+                printf("Duplication of the certificate pointer failed.");
+            }
+
+            if(!(CertDeleteCertificateFromStore(pDupCertContext))){
+                printf("The deletion of the certificate failed.\n");
+            }
+            printf("Deleting cert from %s\n",pszIssuerString);
+        }
+        iOK2Del = 0;
+    } // end while
+
+    CertCloseStore(hStoreHandle, 0);
+
+
+}
+
+/*判断证书是否存在，*/
+int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char *pszUsername)
+{
+    int ret=0;
+    HANDLE          hStoreHandle;
+    PCCERT_CONTEXT  pCertContext=NULL;   
+
+    char pszNameString[256];
+    char pszIssuerString[256];
+
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+        printf("The store was not opened.");
+    }
+
+    while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszIssuerString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!_stricmp(pszIssuer, pszIssuerString)){
+            if(!_stricmp(pszUsername ,pszNameString)){
+                ret=1;
+            }
+        } 
+    } // end while
+
+    CertCloseStore(hStoreHandle, 0);
+    return ret;
+}
+
+PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *pszIssuer,char*pszCertStore,char*pszUserName)
+{
+    int ret=0;
+    HANDLE          hStoreHandle;
+    PCCERT_CONTEXT  pCertContext=NULL;   
+    PKCS12 *pkcs12=NULL;
+    CRYPT_DATA_BLOB fpx;
+    BOOL bRet=FALSE;
+
+    char pszNameString[256];
+    char pszIssuerString[256];
+
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+        printf("The store was not opened.");
+    }
+
+    while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszIssuerString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!_stricmp(pszIssuer, pszIssuerString)){
+            if(!_stricmp(pszUserName ,pszNameString)){
+                memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
+                fpx.pbData=NULL;
+
+                bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+                if(bRet){
+                     fpx.pbData=(unsigned char*)malloc(fpx.cbData);
+                     bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+                     if(bRet)
+                     {
+                         BIO* bio=BIO_new_mem_buf(fpx.pbData,fpx.cbData);
+                         pkcs12=d2i_PKCS12_bio(bio,&pkcs12);
+                         BIO_free(bio);
+                     }
+
+                     if(fpx.pbData!=NULL)
+                     {
+                         free(fpx.pbData);
+                     }
+                     break;//找到一个，就直接退出
+                }
+
+            }
+        } 
+    } // end while
+
+    CertCloseStore(hStoreHandle, 0);
+
+
+    return pkcs12;
+}
