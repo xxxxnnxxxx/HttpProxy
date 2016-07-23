@@ -26,6 +26,7 @@ SSLSocketStream::SSLSocketStream(char**pprecv_buf, DWORD *plen_recv_buf, char**p
     m_keypair=NULL;
     m_send_bio=NULL;
     m_recv_bio=NULL;
+    m_ssl=NULL;
 }
 SSLSocketStream::~SSLSocketStream() {
     uninit();   //释放
@@ -51,15 +52,10 @@ int SSLSocketStream::init(void *buf,int len)
     if(m_ctx!=NULL){
         SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
         SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
-        SSL_CTX_set_cipher_list(m_ctx, "TLSv1.2:TLSv1:SSLv3:!SSLv2:HIGH:!MEDIUM:!LOW");
+        //SSL_CTX_set_cipher_list(m_ctx, "TLSv1.2:TLSv1:SSLv3:!SSLv2:HIGH:!MEDIUM:!LOW");
 
 
-        m_keypair= CertificateProvider::generate_keypair(2048);
-        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
-
-        g_BaseSSLConfig->CA(m_x509);
-        CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
-
+        init_keycert(buf,len);
 
         if (SSL_CTX_use_PrivateKey(m_ctx, m_keypair) <= 0)
         {
@@ -129,8 +125,13 @@ tag:
 
 void SSLSocketStream::uninit()
 {
-    SSL_shutdown(m_ssl);
-    SSL_free(m_ssl);
+    if(m_ssl!=NULL)
+    {
+        SSL_shutdown(m_ssl);
+        SSL_free(m_ssl);
+        m_ssl=NULL;
+    }
+
     if(m_ctx!=NULL)
     {
         SSL_CTX_free(m_ctx);
@@ -147,8 +148,8 @@ void SSLSocketStream::uninit()
         EVP_PKEY_free(m_keypair);
         m_keypair=NULL;
     }
-    BIO_free(m_send_bio);
-    BIO_free(m_recv_bio);
+    if(m_send_bio!=NULL) BIO_free(m_send_bio);
+    if(m_recv_bio!=NULL) BIO_free(m_recv_bio);
 }
 char * SSLSocketStream::get_OpenSSL_Error() {
     memset(m_szErrorMsg, 0, 1024);
@@ -230,4 +231,44 @@ int SSLSocketStream::read(void *buf,DWORD len) {
         }
     }
     return BaseSocketStream::BSS_RET_RECV;
+}
+
+
+//
+void SSLSocketStream::init_keycert(void*buf,int len)
+{
+    char *purl=(char*)buf;
+    int ret=0;
+    X509* CA=NULL;
+    ret=CertificateProvider::is_certexist("xxxxnnxxxx","MY",purl);
+    if(ret)
+    {//已经保存在系统中，直接导出证书
+        PKCS12*pkcs12=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","MY",purl);
+        if(pkcs12!=NULL)
+        {
+            ret=CertificateProvider::pkcs12_getx509(pkcs12,"123456",6,&m_x509,&m_keypair,&CA);
+            if(!ret)
+            {
+                CertificateProvider::del_certs("xxxxnnxxxx","MY",purl);
+
+                //判断是否已经存在证书了
+                m_keypair= CertificateProvider::generate_keypair(2048);
+                m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
+
+                g_BaseSSLConfig->CA(m_x509);
+                CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
+            }
+
+        }
+        
+    }
+    else
+    {
+        //判断是否已经存在证书了
+        m_keypair= CertificateProvider::generate_keypair(2048);
+        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
+
+        g_BaseSSLConfig->CA(m_x509);
+        CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
+    }
 }

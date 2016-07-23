@@ -28,6 +28,7 @@ private:
     
     void            uninit();  //反初始化
     char *          get_OpenSSL_Error();
+    void            init_keycert(void*buf,int len);    //生成证书和私钥
 public:
     int             init(void*url,int len);
     virtual int     write(void *buf,DWORD len);
