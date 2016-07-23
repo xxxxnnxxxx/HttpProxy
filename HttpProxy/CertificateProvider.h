@@ -21,7 +21,7 @@ public:
 
 public:
     static X509*        csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey);
-    static X509*        generate_certificate(EVP_PKEY * pkey, char * url,int len,BOOL bRoot);
+    static X509*        generate_certificate(EVP_PKEY * pkey, char * cname,int len);
     static EVP_PKEY *   generate_keypair(int numofbits);  //生成密钥对
     static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char *pos);
     static int          addCert2WindowsAuth(X509* x509, const char *pos);  
@@ -31,6 +31,7 @@ public:
     static int          saveX509tofile(X509* x509,char *path);
     static int          is_certexist(char *url,int len,BOOL bRoot);
     static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA);    //x509转为pkcs12
+    static int          pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA);
 private:
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);

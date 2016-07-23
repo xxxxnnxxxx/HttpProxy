@@ -113,7 +113,7 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
 /*
 生成证书
 */
-X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * url,int len,BOOL bRoot)
+X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * cname,int len)
 {
     ASN1_INTEGER* aserial = NULL;
     X509 * x509 = X509_new();
@@ -122,14 +122,11 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * url,int 
         printf("Unable to create X509 structure.\n");
         return NULL;
     }
-    if(!bRoot)
-    {
-        if(::IsBadReadPtr(url,len))
-            return NULL;
+    if(::IsBadReadPtr(cname,len))
+        return NULL;
 
-        if(*(url+len)!='\0')
-            return NULL;
-    }
+    if(*(cname+len)!='\0')
+        return NULL;
     
     aserial = M_ASN1_INTEGER_new();
     rand_serial(NULL, aserial);
@@ -153,18 +150,9 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * url,int 
     X509_NAME_add_entry_by_txt(name, "ST", MBSTRING_ASC, (unsigned char*)"Beijing", -1, -1, 0);
 
 
-    if(bRoot)
-    {    
-        X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)"xxxxnnxxxx", -1, -1, 0);
-        X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)"xxxxnnxxxx", -1, -1, 0);
-        X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)"xxxxnnxxxx", -1, -1, 0);
-    }
-    else
-    {
-        X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)url, -1, -1, 0);
-        X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)url, -1, -1, 0);
-        X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)url, -1, -1, 0);
-    }
+    X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)cname, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)cname, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)cname, -1, -1, 0);
     X509_set_issuer_name(x509, name);
     
     
@@ -486,4 +474,33 @@ PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char *passwo
     }
 
     return ppkcs12;
+}
+
+//通过PKCS12获取证书和私钥，返回正确非0，错误0
+int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA)
+{
+    int ret=0;
+    STACK_OF(X509) *cacertstack=NULL;
+
+    if(::IsBadReadPtr(pass,len))
+        return 0;
+
+    if(*(pass+len)!='\0')
+        return 0;
+
+
+    ret=PKCS12_parse(pkcs12,pass,pkey,cert,&cacertstack);
+
+    if(ret!=1)
+    {
+        return 0;
+    }
+
+    //get the ca stack
+    if(cacertstack!=NULL)
+    {
+        *CA=sk_X509_pop(cacertstack);
+    }
+
+    return ret;
 }

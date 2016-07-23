@@ -55,7 +55,7 @@ int SSLSocketStream::init(void *buf,int len)
 
 
         m_keypair= CertificateProvider::generate_keypair(2048);
-        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len,FALSE);
+        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
 
         g_BaseSSLConfig->CA(m_x509);
         CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
