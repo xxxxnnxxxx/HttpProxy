@@ -18,6 +18,9 @@ extern "C" {
 
 extern BaseSSLConfig* g_BaseSSLConfig;
 
+BOOL SSLSocketStream::bInitCritical_section=FALSE;
+CRITICAL_SECTION SSLSocketStream::m_cert_lock={0};
+
 SSLSocketStream::SSLSocketStream(char**pprecv_buf, DWORD *plen_recv_buf, char**ppsend_buf, DWORD *plen_send_buf):
     BaseSocketStream(pprecv_buf,plen_recv_buf,ppsend_buf,plen_send_buf)
 {
@@ -39,6 +42,8 @@ char* SSLSocketStream::_classname(char *buf, DWORD len)
     strcpy_s(buf, len, "SSLSocketStream");
     return buf;
 }
+
+//操，对证书的操作需要同步，否则可能出现其他的问题？？？？？？？？？？？？？？？
 /*
 初始化操作，所有的SSL初始化在这个函数中
 */
@@ -240,6 +245,8 @@ void SSLSocketStream::init_keycert(void*buf,int len)
     char *purl=(char*)buf;
     int ret=0;
     X509* CA=NULL;
+    //这个地方必须保持同步？否则可能重复
+    SSLSocketStream::_entry_();
     ret=CertificateProvider::is_certexist("xxxxnnxxxx","MY",purl);
     if(ret)
     {//已经保存在系统中，直接导出证书
@@ -271,4 +278,25 @@ void SSLSocketStream::init_keycert(void*buf,int len)
         g_BaseSSLConfig->CA(m_x509);
         CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
     }
+    SSLSocketStream::_leave_();
+}
+
+void SSLSocketStream::_init_syn()
+{
+    if(!bInitCritical_section)
+    {
+        InitializeCriticalSection(&SSLSocketStream::m_cert_lock);
+        bInitCritical_section=TRUE;
+    }
+
+}
+
+void SSLSocketStream::_entry_()
+{
+    ::EnterCriticalSection(&SSLSocketStream::m_cert_lock);
+}
+
+void SSLSocketStream::_leave_()
+{
+    ::LeaveCriticalSection(&SSLSocketStream::m_cert_lock);
 }

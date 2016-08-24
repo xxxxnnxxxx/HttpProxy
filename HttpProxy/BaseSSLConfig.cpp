@@ -73,8 +73,11 @@ BOOL BaseSSLConfig::CreateRootCert()
 
     m_rootcert = CertificateProvider::generate_certificate(m_rootkeypair, "xxxxnnxxxx",10);
     if (m_rootcert == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
+    {
+        EVP_PKEY_free(m_rootkeypair);
+        m_rootkeypair=NULL;
         return FALSE;
-
+    }
     return TRUE;
 }
 

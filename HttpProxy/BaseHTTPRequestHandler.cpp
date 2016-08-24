@@ -285,7 +285,7 @@ void BaseHTTPRequestHandler::connect_intercept()
         
     }
 
-    
+    SSLSocketStream::_init_syn();
     //
     m_pBaseSockeStream = new SSLSocketStream(&m_precv_buf, &m_len_recvbuf, &m_pHttpSession->m_pSendbuf, &m_pHttpSession->m_SizeofSendbuf);
     

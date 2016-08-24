@@ -23,7 +23,9 @@ class  SSLSocketStream:public BaseSocketStream
 public:
     SSLSocketStream(char**pprecv_buf, DWORD *len_recv_buf, char**ppsend_buf, DWORD *len_send_buf);
     ~SSLSocketStream();
-
+    static void _init_syn();
+    static void _entry_();
+    static void _leave_();
 private:
     
     void            uninit();  //∑¥≥ı ºªØ
@@ -42,6 +44,8 @@ private:
     SSL_CTX *m_ctx;
     EVP_PKEY *m_keypair;
     X509 *m_x509;
+    static BOOL bInitCritical_section;
+    static CRITICAL_SECTION m_cert_lock;
 };
 
 #endif

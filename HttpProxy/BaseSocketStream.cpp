@@ -43,7 +43,8 @@ int BaseSocketStream::read(void *buf,DWORD len)
 {
     //Çå¿ÕÊý¾Ý
     *m_pprecv_buf = CommonFuncs::_realloc(m_pprecv_buf, *m_plen_recv_buf, *m_plen_recv_buf+len);
-    if (*m_pprecv_buf == NULL) {
+    if (*m_pprecv_buf == NULL) 
+    {
         return BaseSocketStream::BSS_RET_ERROR;
     }
     memcpy_s(*m_pprecv_buf + *m_plen_recv_buf, *m_plen_recv_buf+len, buf, len);
