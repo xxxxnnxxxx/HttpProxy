@@ -68,6 +68,10 @@ char * __stdcall CommonFuncs::_realloc(char ** buf, size_t len,size_t relen)
     if (relen < len) return NULL;
 
     result = (char*)malloc(relen);
+    if(result==NULL)
+        return NULL;
+
+
     memset(result, 0, relen);
 
     if (len > 0 && *buf!=NULL) {//·ÖÅä×¢ÒâÄÚ´æ
