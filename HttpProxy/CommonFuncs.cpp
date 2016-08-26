@@ -49,6 +49,9 @@ int __stdcall CommonFuncs::trim(char *str, size_t len)
     *(end + 1) = 0;
 
     buf = (char*)malloc(len);
+    if(buf==NULL)
+        return 0;
+
     memset(buf, 0, len);
 
     strcpy_s(buf, len, str);
