@@ -42,6 +42,7 @@ public:
     ULONG       status() const { return m_status; }  //状态表所有的都是成功或完成
     BOOL        TrustRootCert();
     BOOL        ExportRootCert(unsigned char *buf,int *len);    //导出根证书
+    X509*       rootcert() const { return m_rootcert;};
 private:
     BOOL        CreateRootCert(); //生成根证书
 private:

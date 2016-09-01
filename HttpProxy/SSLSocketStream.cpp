@@ -245,25 +245,26 @@ void SSLSocketStream::init_keycert(void*buf,int len)
     char *purl=(char*)buf;
     int ret=0;
     X509* CA=NULL;
-    //这个地方必须保持同步？否则可能重复
+    PKCS12*pkcs12=NULL;
+ 
     SSLSocketStream::_entry_();
+
     ret=CertificateProvider::is_certexist("xxxxnnxxxx","MY",purl);
     if(ret)
-    {//已经保存在系统中，直接导出证书
-        PKCS12*pkcs12=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","MY",purl);
+    {
+        pkcs12=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","MY",purl);
         if(pkcs12!=NULL)
         {
             ret=CertificateProvider::pkcs12_getx509(pkcs12,"123456",6,&m_x509,&m_keypair,&CA);
             if(!ret)
             {
-                CertificateProvider::del_certs("xxxxnnxxxx","MY",purl);
-
-                //判断是否已经存在证书了
+                CertificateProvider::del_certs("xxxxnnxxxx","MY",purl); //删除证书后，保存PKCS12的证书
                 m_keypair= CertificateProvider::generate_keypair(2048);
                 m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
-
                 g_BaseSSLConfig->CA(m_x509);
-                CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
+                pkcs12=CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",purl,g_BaseSSLConfig->rootcert());
+                CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",L"123456");
+                
             }
 
         }
@@ -271,12 +272,11 @@ void SSLSocketStream::init_keycert(void*buf,int len)
     }
     else
     {
-        //判断是否已经存在证书了
         m_keypair= CertificateProvider::generate_keypair(2048);
         m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
-
         g_BaseSSLConfig->CA(m_x509);
-        CertificateProvider::addCert2WindowsAuth(m_x509,"MY");
+        pkcs12=CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",purl,g_BaseSSLConfig->rootcert());
+        CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",L"123456");
     }
     SSLSocketStream::_leave_();
 }
