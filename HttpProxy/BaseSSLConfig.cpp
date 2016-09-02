@@ -70,19 +70,18 @@ BOOL BaseSSLConfig::CreateRootCert()
     int ret = 0;
 
     ret = CertificateProvider::is_certexist("xxxxnnxxxx","ROOT","xxxxnnxxxx");
-    if(ret)
-    {//exist
+    if(ret) {//exist
         
     }
-    else 
-    {//no exist
+    else {//no exist
         m_rootkeypair = CertificateProvider::generate_keypair(NUMOfKEYBITS);
+
         if (m_rootkeypair == NULL)
             return FALSE;
 
         m_rootcert = CertificateProvider::generate_certificate(m_rootkeypair, "xxxxnnxxxx",10);
-        if (m_rootcert == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
-        {
+
+        if (m_rootcert == NULL) {
             EVP_PKEY_free(m_rootkeypair);
             m_rootkeypair=NULL;
             return FALSE;
@@ -108,8 +107,8 @@ BOOL BaseSSLConfig::init_ssl()
     do {
 
         number_of_locks = CRYPTO_num_locks();
-        if (number_of_locks > 0)
-        {
+
+        if (number_of_locks > 0) {
             ssl_locks = (ssl_lock*)malloc(number_of_locks * sizeof(ssl_lock));
             for (int n = 0; n < number_of_locks; ++n)
                 InitializeCriticalSection(&ssl_locks[n]);
@@ -145,8 +144,7 @@ void BaseSSLConfig::uninit_ssl()
     ERR_remove_state(0);
     ERR_free_strings();
 
-    if (NULL != ssl_locks)
-    {
+    if (NULL != ssl_locks) {
         for (int n = 0; n < number_of_locks; ++n)
             DeleteCriticalSection(&ssl_locks[n]);
 
@@ -155,13 +153,13 @@ void BaseSSLConfig::uninit_ssl()
         number_of_locks = 0;
     }
 
-    if(m_rootcert!=NULL)
+    if(m_rootcert != NULL)
     {
         X509_free(m_rootcert);
         m_rootcert=NULL;
     }
 
-    if(m_rootkeypair!=NULL)
+    if(m_rootkeypair != NULL)
     {
         EVP_PKEY_free(m_rootkeypair);
         m_rootkeypair=NULL;
@@ -170,14 +168,16 @@ void BaseSSLConfig::uninit_ssl()
     m_status = STATUS_UNINIT;
 }
 
-BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf,int *len)
+BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf, int *len)
 {
     BOOL bRet=FALSE;
     int ret=0;
 
-    if(len==NULL || buf==NULL)return FALSE;
+    if(len == NULL || buf == NULL) 
+        return FALSE;
 
-    ret=CertificateProvider::exportx509(m_rootcert,buf,*len);
+    ret=CertificateProvider::exportx509(m_rootcert, buf, *len);
+
     if(ret>0)
         *len=ret;
 
@@ -187,7 +187,9 @@ BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf,int *len)
 /*签名*/
 int BaseSSLConfig::CA(X509*x509)
 {
-    int ret=0;
-    ret=CertificateProvider::x509_certify(x509,m_rootcert,m_rootkeypair);
+    int ret = 0;
+
+    ret = CertificateProvider::x509_certify(x509, m_rootcert, m_rootkeypair);
+
     return ret;
 }
