@@ -67,17 +67,28 @@ BaseSSLConfig* BaseSSLConfig::CreateInstance()
 
 BOOL BaseSSLConfig::CreateRootCert()
 {
-    m_rootkeypair = CertificateProvider::generate_keypair(NUMOfKEYBITS);
-    if (m_rootkeypair == NULL)
-        return FALSE;
+    int ret = 0;
 
-    m_rootcert = CertificateProvider::generate_certificate(m_rootkeypair, "xxxxnnxxxx",10);
-    if (m_rootcert == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
-    {
-        EVP_PKEY_free(m_rootkeypair);
-        m_rootkeypair=NULL;
-        return FALSE;
+    ret = CertificateProvider::is_certexist("xxxxnnxxxx","ROOT","xxxxnnxxxx");
+    if(ret)
+    {//exist
+        
     }
+    else 
+    {//no exist
+        m_rootkeypair = CertificateProvider::generate_keypair(NUMOfKEYBITS);
+        if (m_rootkeypair == NULL)
+            return FALSE;
+
+        m_rootcert = CertificateProvider::generate_certificate(m_rootkeypair, "xxxxnnxxxx",10);
+        if (m_rootcert == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
+        {
+            EVP_PKEY_free(m_rootkeypair);
+            m_rootkeypair=NULL;
+            return FALSE;
+        }
+    }
+
     return TRUE;
 }
 

@@ -41,15 +41,14 @@ AcceptConnection::AcceptConnection(HANDLE hCompletionPort, SOCKET acp, sockaddr_
 
     
     //初始化处理
-    Init_DataHandlerObj();                                                                                              //初始化关键代码
+    Init_DataHandlerObj(); 
     InitializeCriticalSection(&m_lock);
 }
 
 
 void AcceptConnection::Init_DataHandlerObj()
 {
-    //创建处理对象
-    m_handler = new BaseHTTPRequestHandler(&m_httpservice_params, &m_httpsession);   //创建处理对象
+    m_handler = new BaseHTTPRequestHandler(&m_httpservice_params, &m_httpsession); 
 }
 
 AcceptConnection::~AcceptConnection() {

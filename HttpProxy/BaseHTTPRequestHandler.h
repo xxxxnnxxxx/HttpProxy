@@ -46,13 +46,12 @@ private:
     HttpRequest             httprequest;
     HTTPSERVICE_PARAMS*     m_pHttpService_Params;
     BaseSocketStream *      m_pBaseSockeStream;
-
-    WORD m_port;        //保存端口号
-    char m_uri[1024];   //保存主机地址
+    WORD                    m_port;        //保存端口号
+    char                    m_uri[1024];   //保存主机地址
 public:
-    char *          m_precv_buf;      //接受数据的缓冲区，要分析的
-    DWORD           m_len_recvbuf;    //处理后得到的缓冲区长度
-    HttpSession *   m_pHttpSession;
+    char *                  m_precv_buf;      //接受数据的缓冲区，要分析的
+    DWORD                   m_len_recvbuf;    //处理后得到的缓冲区长度
+    HttpSession *           m_pHttpSession;
 };
 
 #endif

@@ -43,9 +43,8 @@ char* SSLSocketStream::_classname(char *buf, DWORD len)
     return buf;
 }
 
-//操，对证书的操作需要同步，否则可能出现其他的问题？？？？？？？？？？？？？？？
 /*
-初始化操作，所有的SSL初始化在这个函数中
+*初始化操作，所有的SSL初始化在这个函数中
 */
 int SSLSocketStream::init(void *buf,int len)
 {
@@ -57,8 +56,6 @@ int SSLSocketStream::init(void *buf,int len)
     if(m_ctx!=NULL){
         SSL_CTX_set_verify(m_ctx, SSL_VERIFY_NONE, NULL);
         SSL_CTX_set_mode(m_ctx, SSL_MODE_AUTO_RETRY);
-        //SSL_CTX_set_cipher_list(m_ctx, "TLSv1.2:TLSv1:SSLv3:!SSLv2:HIGH:!MEDIUM:!LOW");
-
 
         init_keycert(buf,len);
 
@@ -156,7 +153,8 @@ void SSLSocketStream::uninit()
     if(m_send_bio!=NULL) BIO_free(m_send_bio);
     if(m_recv_bio!=NULL) BIO_free(m_recv_bio);
 }
-char * SSLSocketStream::get_OpenSSL_Error() {
+char * SSLSocketStream::get_OpenSSL_Error() 
+{
     memset(m_szErrorMsg, 0, 1024);
     unsigned long ulErr = ERR_get_error();
     char *pTmp = NULL;
@@ -167,10 +165,12 @@ char * SSLSocketStream::get_OpenSSL_Error() {
 
 
 //发送数据需要这个地方
-int SSLSocketStream::write(void *buf,DWORD len) {
+int SSLSocketStream::write(void *buf,DWORD len) 
+{
     int result = 0;
     int bytes = SSL_write(m_ssl, buf, len);
-    if (bytes) {
+    if (bytes) 
+    {
         //
         if (BIO_pending(m_send_bio)) {
             bytes = BIO_ctrl_pending(m_send_bio);
@@ -186,7 +186,8 @@ int SSLSocketStream::write(void *buf,DWORD len) {
 }
 
 //接收数据的地方
-int SSLSocketStream::read(void *buf,DWORD len) {
+int SSLSocketStream::read(void *buf,DWORD len) 
+{
 
     //清空数据
     *m_ppsend_buf = NULL;

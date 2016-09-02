@@ -48,6 +48,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="4"
 				WarningLevel="3"
 				WarnAsError="true"
 				DebugInformationFormat="4"
@@ -159,6 +160,14 @@
 			<File
 				RelativePath=".\AcceptConnection.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="4"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\BaseDataHandler.cpp"
@@ -247,6 +256,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Config.h"
+				>
+			</File>
+			<File
 				RelativePath=".\header.h"
 				>
 			</File>
@@ -302,6 +315,18 @@
 			</File>
 			<File
 				RelativePath=".\CertificateProvider.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="RootCert_PriKey"
+			>
+			<File
+				RelativePath=".\RootCert_PriKey\PriKey.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RootCert_PriKey\RootCert.h"
 				>
 			</File>
 		</Filter>

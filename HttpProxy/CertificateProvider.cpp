@@ -109,6 +109,77 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
 }
 
 /*
+导出私钥
+*/
+int CertificateProvider::exportPriKey(EVP_PKEY *pKey,unsigned char *buf, int len)
+{
+    int len_prikey=0;
+    unsigned char *buf_prikey=NULL;
+
+    //加密x509 to DER
+    len_prikey = i2d_PrivateKey(pKey, &buf_prikey);
+    if(len_prikey<0)
+        return 0;
+
+    if(buf==NULL || len==0)
+    {
+        if(len_prikey!=NULL)
+            OPENSSL_free(buf_prikey);
+        return len_prikey;
+    }
+
+    if(::IsBadReadPtr(buf,len)){
+        OPENSSL_free(buf_prikey);
+        return 0;
+    }
+
+    memcpy_s(buf,len,buf_prikey,((len>len_prikey)?len_prikey:len));
+    if(buf_prikey!=NULL)
+        OPENSSL_free(buf_prikey);
+    return len_prikey;
+}
+
+/*
+保存私钥到文件
+*/
+int CertificateProvider::savePriKeytofile(EVP_PKEY *pkey, char*path)
+{
+    unsigned char * buf = NULL;
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    int ret = 0;
+    DWORD dwWrited = 0;
+    int len = exportPriKey(pkey,NULL,0);
+    if(len <= 0)
+        return 0;
+
+    buf = (unsigned char*)malloc(len);
+    memset(buf,0,len);
+
+    len = exportPriKey(pkey,buf,len);
+
+    hFile = ::CreateFileA(path,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+    if(hFile!=INVALID_HANDLE_VALUE)
+    {
+        BOOL bRet=::WriteFile(hFile,buf,len,&dwWrited,NULL);
+        if(bRet)
+            ret=len;
+        else
+            ret=0;
+    }
+
+    if(hFile!=INVALID_HANDLE_VALUE)
+        CloseHandle(hFile);
+
+    if(buf!=NULL)
+    {
+        free(buf);
+        buf=NULL;
+    }
+
+    return ret;
+}
+
+/*
 生成证书
 */
 X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * cname,int len)
@@ -305,6 +376,19 @@ int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
     if(buf_x509!=NULL)
         OPENSSL_free(buf_x509);
     return len_x509;
+}
+
+int CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len)
+{
+    int len_x509 = 0;
+    X509 *x509 = NULL;
+
+    x509=d2i_X509(pX509,(const unsigned char**)&buf,len);
+    if(x509!=NULL)
+    {
+        
+    }
+    return (int)x509;
 }
 
 int CertificateProvider::saveX509tofile(X509* x509,char *path)
@@ -560,7 +644,7 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
 {
     int ret=0;
     HANDLE          hStoreHandle;
-    PCCERT_CONTEXT  pCertContext=NULL;   
+    PCCERT_CONTEXT  pCertContext=NULL;
 
     char pszNameString[256];
     char pszIssuerString[256];

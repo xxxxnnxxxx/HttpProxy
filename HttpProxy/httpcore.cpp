@@ -135,7 +135,10 @@ BOOL __stdcall ExportRootCert(SCG_HANDLE handle,unsigned char *buf, int *len)
 #ifdef _DEBUG
 int __stdcall Unittest()
 {
+
     int ret=0;
+
+#if 0
     EVP_PKEY*pKey=CertificateProvider::generate_keypair(2048);
     X509* x509_root=CertificateProvider::generate_certificate(pKey,"xxxxnnxxxx",10);
     PKCS12*pkcs12=CertificateProvider::x509topkcs12(x509_root,pKey,"123456","xxxxnnxxxx",NULL);
@@ -144,7 +147,7 @@ int __stdcall Unittest()
     PKCS12*pkcs12_tmp=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","ROOT","xxxxnnxxxx");
     if(pkcs12_tmp!=NULL)
     {
-
+        
     }
 
     //
@@ -200,7 +203,32 @@ int __stdcall Unittest()
     {
         MessageBoxA(NULL,"faild","msg",MB_OK);
     }
+#endif
 
+    //生成根证书和私钥文件
+#if 1
+    EVP_PKEY *pKey = CertificateProvider::generate_keypair(2048);
+    if (pKey == NULL)
+        return -1;
+
+    X509 *x509 = CertificateProvider::generate_certificate(pKey, "xxxxnnxxxx",10);
+    if (x509 == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
+    {
+        EVP_PKEY_free(pKey);
+        pKey=NULL;
+        return -1;
+    }
+    
+    //保存密钥和证书到文件
+    
+    CertificateProvider::savePriKeytofile(pKey,"D:\\PriKey.pem");
+    CertificateProvider::saveX509tofile(x509,"D:\\RootCert.pem");
+
+    OPENSSL_free(x509);
+    OPENSSL_free(pKey);
+    
+
+#endif
     return ret;
 }
 #endif
