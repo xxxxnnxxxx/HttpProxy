@@ -20,6 +20,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HttpProxyServer", "HttpProx
 		{A2140E84-BA42-4DA1-9F0B-C069AA8F6A90} = {A2140E84-BA42-4DA1-9F0B-C069AA8F6A90}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CertGen", "CertGen\CertGen.vcproj", "{3870E31C-C395-4BF9-8372-F1F1BF7A2E3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -46,6 +48,10 @@ Global
 		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Debug|Win32.Build.0 = Debug|Win32
 		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Release|Win32.ActiveCfg = Release|Win32
 		{EBEB25CB-73CD-47BC-B772-CEE8F38BF920}.Release|Win32.Build.0 = Release|Win32
+		{3870E31C-C395-4BF9-8372-F1F1BF7A2E3F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3870E31C-C395-4BF9-8372-F1F1BF7A2E3F}.Debug|Win32.Build.0 = Debug|Win32
+		{3870E31C-C395-4BF9-8372-F1F1BF7A2E3F}.Release|Win32.ActiveCfg = Release|Win32
+		{3870E31C-C395-4BF9-8372-F1F1BF7A2E3F}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
