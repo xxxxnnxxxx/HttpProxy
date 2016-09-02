@@ -139,6 +139,18 @@ int CertificateProvider::exportPriKey(EVP_PKEY *pKey,unsigned char *buf, int len
     return len_prikey;
 }
 
+int CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len)
+{
+    EVP_PKEY *pPriKey = NULL;
+
+    pPriKey = d2i_PrivateKey(EVP_PKEY_RSA,ppKey,(const unsigned char**)&buf, len);
+
+    if(pPriKey != NULL) {
+        
+    }
+    return (int)pPriKey;
+}
+
 /*
 保存私钥到文件
 */

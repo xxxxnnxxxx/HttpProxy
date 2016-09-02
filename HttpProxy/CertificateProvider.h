@@ -24,6 +24,7 @@ public:
     static X509*        generate_certificate(EVP_PKEY * pkey, char * cname,int len);
     static EVP_PKEY *   generate_keypair(int numofbits);  //…˙≥…√‹‘ø∂‘
     static int          exportPriKey(EVP_PKEY *pKey,unsigned char *buf, int len);
+    static int          importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len);
     static int          savePriKeytofile(EVP_PKEY *pkey, char*path);
     static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char* pos);
     static int          addCert2WindowsAuth(X509* x509, const char *pos);  
