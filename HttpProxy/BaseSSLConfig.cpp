@@ -68,10 +68,23 @@ BaseSSLConfig* BaseSSLConfig::CreateInstance()
 BOOL BaseSSLConfig::CreateRootCert()
 {
     int ret = 0;
+    PKCS12*pkcs12 = NULL;
+    X509* CA = NULL;
 
     ret = CertificateProvider::is_certexist("xxxxnnxxxx","ROOT","xxxxnnxxxx");
-    if(ret) {//exist
-        
+    if(ret)
+    {//exist
+        pkcs12=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","ROOT",NULL);
+        if(pkcs12!=NULL)
+        {
+            ret=CertificateProvider::pkcs12_getx509(pkcs12,"123456",6,&m_rootcert,&m_rootkeypair,&CA);
+            if(!ret)
+            {//regenerate
+                
+
+            }
+
+        }
     }
     else {//no exist
         m_rootkeypair = CertificateProvider::generate_keypair(NUMOfKEYBITS);
