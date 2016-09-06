@@ -243,16 +243,28 @@ int SSLSocketStream::read(void *buf,DWORD len)
 //
 void SSLSocketStream::init_keycert(void*buf,int len)
 {
-    char *purl=(char*)buf;
-    int ret=0;
-    X509* CA=NULL;
-    PKCS12*pkcs12=NULL;
+    char *purl = NULL;
+    int ret = 0;
+    X509* CA = NULL;
+    PKCS12*pkcs12 = NULL;
+
+    if(len <= 0) return;
+   
+    
  
     SSLSocketStream::_entry_();
 
+    purl = (char*)malloc(len+1);
+
+    if(purl!=NULL){
+        memset(purl, 0, len+1);
+        memcpy_s(purl, len+1, buf, len);
+    }
+    else return;
+
     ret=CertificateProvider::is_certexist("xxxxnnxxxx","MY",purl);
     if(ret)
-    {
+    {//????????????????????????????????????????????////有问题阿fuck-----------------------------------
         pkcs12=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","MY",purl);
         if(pkcs12!=NULL)
         {
@@ -261,7 +273,7 @@ void SSLSocketStream::init_keycert(void*buf,int len)
             {
                 CertificateProvider::del_certs("xxxxnnxxxx","MY",purl); //删除证书后，保存PKCS12的证书
                 m_keypair= CertificateProvider::generate_keypair(2048);
-                m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf, (char*)buf, (char*)buf);
+                m_x509   = CertificateProvider::generate_certificate(m_keypair,purl, purl, purl);
                 g_BaseSSLConfig->CA(m_x509);
                 pkcs12=CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",purl,g_BaseSSLConfig->rootcert());
                 CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",L"123456");
@@ -273,12 +285,14 @@ void SSLSocketStream::init_keycert(void*buf,int len)
     }
     else
     {
-        m_keypair= CertificateProvider::generate_keypair(2048);
-        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf, (char*)buf, (char*)buf);
-        g_BaseSSLConfig->CA(m_x509);
-        pkcs12=CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",purl,g_BaseSSLConfig->rootcert());
+        m_keypair = CertificateProvider::generate_keypair(2048);
+        m_x509   = CertificateProvider::generate_certificate(m_keypair,purl, purl, purl, CertificateProvider::DEF_DAYS);
+        ret = g_BaseSSLConfig->CA(m_x509);
+        pkcs12 = CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",NULL,NULL);
         CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",L"123456");
     }
+
+    if(purl != NULL) free(purl);
     SSLSocketStream::_leave_();
 }
 

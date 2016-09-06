@@ -346,12 +346,12 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar
         if(hImportCertStore)
         {
             PCCERT_CONTEXT pCertContext = NULL;
-            pCertContext= CertEnumCertificatesInStore(hImportCertStore,pCertContext);
+            pCertContext = CertEnumCertificatesInStore(hImportCertStore,pCertContext);
 
             if(pCertContext!=NULL)
             {
                 hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-                CertAddCertificateContextToStore(hRootCertStore, pCertContext, CERT_STORE_ADD_REPLACE_EXISTING, NULL);
+                ret = CertAddCertificateContextToStore(hRootCertStore, pCertContext, CERT_STORE_ADD_REPLACE_EXISTING, NULL);
             }
         }
         else

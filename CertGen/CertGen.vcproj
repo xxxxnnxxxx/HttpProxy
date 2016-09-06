@@ -182,6 +182,10 @@
 				RelativePath="..\HttpProxy\CertificateProvider.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\HttpProxy\CommonFuncs.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

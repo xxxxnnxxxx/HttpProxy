@@ -4,6 +4,7 @@
 #include "SSLSocketStream.h"
 #include "httprequest.h"
 #include "CommonFuncs.h"
+#include "ContentHandle.h"
 #include "BaseSSLConfig.h"
 #include "BaseHTTPRequestHandler.h"
 
@@ -415,9 +416,9 @@ size_t BaseHTTPRequestHandler::find_httpheader(const char* buf, size_t bufsize) 
     size_t httplen = 0;
     char *pHttpFlag = NULL;
     if (buf != NULL && bufsize>0) {
-        if (CommonFuncs::search_content(buf, bufsize, "^\\S{3,}\\s{1,}\\S{1,}\\s{1,}HTTP\\/[0-9]\\.[0-9]\\s{2}",NULL,NULL))
+        if (ContentHandle::search_content(buf, bufsize, "^\\S{3,}\\s{1,}\\S{1,}\\s{1,}HTTP\\/[0-9]\\.[0-9]\\s{2}",NULL,NULL))
         {
-            if (CommonFuncs::search_content(buf, bufsize, "\r\n\r\n", &pHttpFlag, &httplen))
+            if (ContentHandle::search_content(buf, bufsize, "\r\n\r\n", &pHttpFlag, &httplen))
             {
                 httplen += strlen("\r\n\r\n");
             }

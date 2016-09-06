@@ -10,7 +10,6 @@ public:
     static char *   __stdcall GetCurrentDir(char* value, int len);
     static int      __stdcall trim(char *str, size_t len);
     static char *   __stdcall _realloc(char ** buf, size_t len, size_t relen); //重新分配内存
-    static BOOL     __stdcall search_content(const char *sbuf, size_t bufsize, const char *reg, char **pFirstPos, size_t *offset);
     static DWORD    __stdcall _min(DWORD a, DWORD b);
 };
 

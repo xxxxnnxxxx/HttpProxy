@@ -16,6 +16,8 @@ void HttpContent::insert(const char *buf, int len)
 {
     struct _list_httpcontent_block_ *pBlock = NULL;
 
+    if(len <= 0) return;    //
+
     //init
 
     pBlock = (struct _list_httpcontent_block_*)malloc(sizeof(struct _list_httpcontent_block_));

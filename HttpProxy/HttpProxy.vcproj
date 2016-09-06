@@ -26,7 +26,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="generate headers about rootcert and prikey"
-				CommandLine="set PATH=..\tools&#x0D;&#x0A;xxd  -i ..\Cert_PriKey\PriKey.pem ..\HttpProxy\RootCert_PriKey\PriKey.h&#x0D;&#x0A;xxd -i ..\Cert_PriKey\RootCert.pem ..\HttpProxy\RootCert_PriKey\RootCert.h"
+				CommandLine="set PATH=..\tools&#x0D;&#x0A;xxd  -i ..\Cert_PriKey\PriKey.pem ..\HttpProxy\RootCert_PriKey\PriKey.h&#x0D;&#x0A;xxd -i ..\Cert_PriKey\RootCert.pem ..\HttpProxy\RootCert_PriKey\RootCert.h&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -192,10 +192,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\CommonFuncs.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\httpcontent.cpp"
 				>
 			</File>
@@ -251,10 +247,6 @@
 			</File>
 			<File
 				RelativePath=".\BaseSSLConfig.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CommonFuncs.h"
 				>
 			</File>
 			<File
@@ -333,6 +325,26 @@
 			</File>
 			<File
 				RelativePath=".\RootCert_PriKey\RootCertConfig.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Common"
+			>
+			<File
+				RelativePath=".\CommonFuncs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CommonFuncs.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ContentHandle.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ContentHandle.h"
 				>
 			</File>
 		</Filter>
