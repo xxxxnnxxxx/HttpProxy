@@ -3,3 +3,4 @@
 HttpProxyServer.exe
 HttpProxyServer.ilk
 HttpProxyServer.pdb
+*.pem

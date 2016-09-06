@@ -30,3 +30,5 @@
 *.suo
 /example/
 *.7z
+
+/Cert_PriKey/
