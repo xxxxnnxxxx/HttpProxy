@@ -19,9 +19,13 @@ public:
         FORMAT_PEM=2,
     };
 
+    enum{
+        DEF_DAYS=30,
+    };
+
 public:
     static X509*        csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey);
-    static X509*        generate_certificate(EVP_PKEY * pkey, char * cname,int len);
+    static X509*        generate_certificate(EVP_PKEY * pkey, char*, char*, char*, int days=DEF_DAYS);
     static EVP_PKEY *   generate_keypair(int numofbits);  //生成密钥对
     static int          exportPriKey(EVP_PKEY *pKey,unsigned char *buf, int len);
     static int          importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len);
@@ -29,11 +33,12 @@ public:
     static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char* pos);
     static int          addCert2WindowsAuth(X509* x509, const char *pos);  
     static int          addCert2WindowsAuth(PKCS12*pkcs12, const char *pos,wchar_t* password);
-    static int          exportx509(X509* x509, unsigned char*  buf, int len);
+    static int          exportx509(X509* x509, unsigned char* buf, int len);
     static int          importx509(X509**pX509, unsigned char* buf, int len);
     static int          x509_certify(X509*x,X509*xca, EVP_PKEY*pkey_ca); /*CA签名*/
     static int          saveX509tofile(X509* x509, char *path);
     static int          is_certexist(char* pszIssuer, char* pszCertStore, char* pszUsername);
+    static int          is_certexist(X509 *x509, char *pszCertStore, wchar_t *pszpwd);   //是否存在
     static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA);    //x509转为pkcs12
     static int          pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA);
     static void         del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername);

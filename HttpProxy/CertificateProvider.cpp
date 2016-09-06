@@ -8,7 +8,7 @@
 #include <openssl/err.h>
 #include <openssl\evp.h>
 #include <stdio.h>
-
+#include "CommonFuncs.h"
 
 /*
 证书操作，这个地方没有写CA签名的过程，只是简单生成了一个证书
@@ -193,7 +193,11 @@ int CertificateProvider::savePriKeytofile(EVP_PKEY *pkey, char*path)
 /*
 生成证书
 */
-X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * cname,int len)
+X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, 
+                                                char *O,
+                                                char *OU,
+                                                char *CN, 
+                                                int days/*=30*/)
 {
     ASN1_INTEGER* aserial = NULL;
     X509 * x509 = X509_new();
@@ -202,17 +206,13 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * cname,in
         printf("Unable to create X509 structure.\n");
         return NULL;
     }
-    if(::IsBadReadPtr(cname,len))
-        return NULL;
 
-    if(*(cname+len)!='\0')
-        return NULL;
-    
     aserial = M_ASN1_INTEGER_new();
     rand_serial(NULL, aserial);
     X509_set_serialNumber(x509, aserial);
     X509_gmtime_adj(X509_get_notBefore(x509), 0);
     X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
+    X509_time_adj_ex(X509_get_notAfter(x509), days, 0, NULL);
     X509_set_pubkey(x509, pkey);
     X509_NAME * name = X509_get_subject_name(x509);
 
@@ -230,9 +230,9 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * cname,in
     X509_NAME_add_entry_by_txt(name, "ST", MBSTRING_ASC, (unsigned char*)"Beijing", -1, -1, 0);
 
 
-    X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)cname, -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)cname, -1, -1, 0);
-    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)cname, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "OU", MBSTRING_ASC, (unsigned char*)OU, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "O", MBSTRING_ASC, (unsigned char *)O, -1, -1, 0);
+    X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, (unsigned char *)CN, -1, -1, 0);
     X509_set_issuer_name(x509, name);
     
     
@@ -251,7 +251,9 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, char * cname,in
 添加证书到系统指定的位置
 pos: "ROOT","MY","SPC","CA"
 */
-int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char *pos)
+int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, 
+                                             int len_x509_der, 
+                                             const char *pos)
 {
     int ret = 0;
     int error = 0;
@@ -653,9 +655,9 @@ void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *p
 /*判断证书是否存在，*/
 int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char *pszUsername)
 {
-    int ret=0;
+    int ret  = 0;
     HANDLE          hStoreHandle;
-    PCCERT_CONTEXT  pCertContext=NULL;
+    PCCERT_CONTEXT  pCertContext = NULL;
 
     char pszNameString[256];
     char pszIssuerString[256];
@@ -681,6 +683,76 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
     } // end while
 
     CertCloseStore(hStoreHandle, 0);
+    return ret;
+}
+
+//
+int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *pszpwd)
+{
+    int ret = 0;
+    HANDLE          hStoreHandle;
+    PCCERT_CONTEXT  pCertContext=NULL;   
+    PKCS12 *pkcs12 = NULL;
+    CRYPT_DATA_BLOB fpx;
+    BOOL bRet = FALSE;
+    X509 *pX09 = NULL;
+    EVP_PKEY *pPriKey = NULL;
+    X509 *ca = NULL;
+
+
+    char pszNameString[256];
+    char pszIssuerString[256];
+
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+        printf("The store was not opened.");
+    }
+
+    while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszIssuerString, 128))){
+            printf("CertGetName failed.");
+        }
+
+        memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
+        fpx.pbData=NULL;
+
+        bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+        if(bRet){
+            fpx.pbData=(unsigned char*)malloc(fpx.cbData);
+            bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+            if(bRet)
+            {
+                char *ptmp = NULL;
+                int tmplen = 0;
+                BIO* bio = BIO_new_mem_buf(fpx.pbData,fpx.cbData);
+                pkcs12 = d2i_PKCS12_bio(bio,&pkcs12);
+                BIO_free(bio);
+                tmplen = CommonFuncs::w2a(pszpwd,&ptmp);
+                if(pkcs12_getx509(pkcs12, ptmp, tmplen, &pX09, &pPriKey,&ca))
+                {
+                    EVP_PKEY * pubkey = X509_get_pubkey(x509);
+                    ret = X509_verify(pX09,pubkey);
+                }
+
+                if(ptmp != NULL) free(ptmp);
+                OPENSSL_free(pX09);
+                EVP_PKEY_free(pPriKey);
+            }
+
+            if(fpx.pbData!=NULL)
+            {
+                free(fpx.pbData);
+            }
+            break;//找到一个，就直接退出
+        }
+    } // end while
+
+    CertCloseStore(hStoreHandle, 0);
+
+
     return ret;
 }
 
