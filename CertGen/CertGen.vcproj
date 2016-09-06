@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
@@ -41,11 +41,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\include;..\include\openssl-win32\include\;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="4"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -60,7 +62,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libeay32MTd.lib ssleay32MTd.lib Crypt32.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -174,12 +178,20 @@
 				RelativePath=".\certgen.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\HttpProxy\CertificateProvider.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\config.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
