@@ -25,6 +25,8 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				Description="generate headers about rootcert and prikey"
+				CommandLine="set PATH=..\tools&#x0D;&#x0A;xxd  -i ..\Cert_PriKey\PriKey.pem ..\HttpProxy\RootCert_PriKey\PriKey.h&#x0D;&#x0A;xxd -i ..\Cert_PriKey\RootCert.pem ..\HttpProxy\RootCert_PriKey\RootCert.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -327,6 +329,10 @@
 			</File>
 			<File
 				RelativePath=".\RootCert_PriKey\RootCert.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RootCert_PriKey\RootCertConfig.h"
 				>
 			</File>
 		</Filter>
