@@ -1,6 +1,8 @@
 
 #include "CertificateProvider.h"
 #include "BaseSSLConfig.h"
+#include "RootCert_PriKey/PriKey.h"
+#include "RootCert_PriKey/RootCert.h"
 
 //初始化SSL
 typedef CRITICAL_SECTION	ssl_lock;
@@ -65,40 +67,25 @@ BaseSSLConfig* BaseSSLConfig::CreateInstance()
     return instance;
 }
 
-BOOL BaseSSLConfig::CreateRootCert()
+BOOL BaseSSLConfig::InitRootCert()
 {
     int ret = 0;
     PKCS12*pkcs12 = NULL;
     X509* CA = NULL;
 
-    ret = CertificateProvider::is_certexist("xxxxnnxxxx","ROOT","xxxxnnxxxx");
-    if(ret)
-    {//exist
-        pkcs12=CertificateProvider::get_pkcs12fromWindowsAuth(L"123456","xxxxnnxxxx","ROOT",NULL);
-        if(pkcs12!=NULL)
-        {
-            ret=CertificateProvider::pkcs12_getx509(pkcs12,"123456",6,&m_rootcert,&m_rootkeypair,&CA);
-            if(!ret)
-            {//regenerate
-                
-
-            }
-
-        }
+    //导入证书文件
+    ret = CertificateProvider::importx509(&m_rootcert, ___Cert_PriKey_RootCert_pem, ___Cert_PriKey_RootCert_pem_len);
+    if(!ret){
+        return FALSE;
     }
-    else {//no exist
-        m_rootkeypair = CertificateProvider::generate_keypair(NUMOfKEYBITS);
 
-        if (m_rootkeypair == NULL)
-            return FALSE;
 
-        m_rootcert = CertificateProvider::generate_certificate(m_rootkeypair, "xxxxnnxxxx",10);
-
-        if (m_rootcert == NULL) {
-            EVP_PKEY_free(m_rootkeypair);
-            m_rootkeypair=NULL;
-            return FALSE;
-        }
+    ret = CertificateProvider::importPriKey(&m_rootkeypair, ___Cert_PriKey_PriKey_pem, ___Cert_PriKey_PriKey_pem_len);
+    if(!ret){
+        OPENSSL_free(m_rootcert);
+        m_rootcert = NULL;
+        m_rootkeypair = NULL;
+        return FALSE;
     }
 
     return TRUE;
@@ -106,11 +93,26 @@ BOOL BaseSSLConfig::CreateRootCert()
 
 BOOL BaseSSLConfig::TrustRootCert()
 {
-    if (m_status == BaseSSLConfig::STATUS_INITFINAL) {
-        
-        return CertificateProvider::addCert2WindowsAuth(m_rootcert, "ROOT");
-    }
+    PKCS12 *pkcs12;
+    int ret = 0;
 
+    if (m_status == BaseSSLConfig::STATUS_INITFINAL) {
+
+        //判断是否存在证书
+        ret = CertificateProvider::is_certexist(m_rootcert, "ROOT", L"123456");
+
+        if(ret){
+
+        }
+        else{
+            pkcs12 = CertificateProvider::x509topkcs12(m_rootcert, m_rootkeypair, "123456", NULL, NULL);
+            if(pkcs12 == NULL){
+                return FALSE;
+            }
+            return CertificateProvider::addCert2WindowsAuth(m_rootcert, "ROOT");
+        }
+       
+    }
     return FALSE;
 }
 
@@ -135,7 +137,7 @@ BOOL BaseSSLConfig::init_ssl()
         SSL_load_error_strings();
         SSL_library_init();
 
-        bRet=CreateRootCert();
+        bRet=InitRootCert();
     } while (0);
 
     if (bRet) {

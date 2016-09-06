@@ -44,7 +44,7 @@ public:
     BOOL        ExportRootCert(unsigned char *buf,int *len);    //导出根证书
     X509*       rootcert() const { return m_rootcert;};
 private:
-    BOOL        CreateRootCert(); //生成根证书
+    BOOL        InitRootCert(); //生成根证书
 private:
     ULONG       m_status;
     X509        *m_rootcert;   //根证书
