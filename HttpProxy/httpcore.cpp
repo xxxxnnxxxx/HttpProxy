@@ -140,7 +140,7 @@ int __stdcall Unittest()
 
 #if 0
     EVP_PKEY*pKey=CertificateProvider::generate_keypair(2048);
-    X509* x509_root=CertificateProvider::generate_certificate(pKey,"xxxxnnxxxx",10);
+    X509* x509_root=CertificateProvider::generate_certificate(pKey,"xxxxnnxxxx");
     PKCS12*pkcs12=CertificateProvider::x509topkcs12(x509_root,pKey,"123456","xxxxnnxxxx",NULL);
     CertificateProvider::addCert2WindowsAuth(pkcs12,"ROOT",L"123456");
     
@@ -178,7 +178,7 @@ int __stdcall Unittest()
     }
 
     EVP_PKEY*pKey_server=CertificateProvider::generate_keypair(2048);
-    X509* x509_server=CertificateProvider::generate_certificate(pKey_server,"*.baidu.com",12);
+    X509* x509_server=CertificateProvider::generate_certificate(pKey_server,"*.baidu.com");
 
 
 
@@ -206,12 +206,12 @@ int __stdcall Unittest()
 #endif
 
     //生成根证书和私钥文件
-#if 1
+#if 0
     EVP_PKEY *pKey = CertificateProvider::generate_keypair(2048);
     if (pKey == NULL)
         return -1;
 
-    X509 *x509 = CertificateProvider::generate_certificate(pKey, "xxxxnnxxxx",10);
+    X509 *x509 = CertificateProvider::generate_certificate(pKey, "xxxxnnxxxx");
     if (x509 == NULL)/*这个地方还是存在问题，应当在为空的情况下释放m_rootkeypair*/
     {
         EVP_PKEY_free(pKey);
