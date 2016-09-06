@@ -261,7 +261,7 @@ void SSLSocketStream::init_keycert(void*buf,int len)
             {
                 CertificateProvider::del_certs("xxxxnnxxxx","MY",purl); //删除证书后，保存PKCS12的证书
                 m_keypair= CertificateProvider::generate_keypair(2048);
-                m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
+                m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf, (char*)buf, (char*)buf);
                 g_BaseSSLConfig->CA(m_x509);
                 pkcs12=CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",purl,g_BaseSSLConfig->rootcert());
                 CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",L"123456");
@@ -274,7 +274,7 @@ void SSLSocketStream::init_keycert(void*buf,int len)
     else
     {
         m_keypair= CertificateProvider::generate_keypair(2048);
-        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf,len);
+        m_x509   = CertificateProvider::generate_certificate(m_keypair,(char*)buf, (char*)buf, (char*)buf);
         g_BaseSSLConfig->CA(m_x509);
         pkcs12=CertificateProvider::x509topkcs12(m_x509,m_keypair,"123456",purl,g_BaseSSLConfig->rootcert());
         CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",L"123456");
