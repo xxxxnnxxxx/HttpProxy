@@ -624,8 +624,8 @@ void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *p
             printf("CertGetName failed.");
         }
 
-        if(!_stricmp(pszIssuer, pszIssuerString)){
-            if(!_stricmp(pszUsername ,pszNameString)){
+        if(_stricmp(pszIssuer, pszIssuerString) == 0){
+            if( _stricmp(pszUsername ,pszNameString) == 0){
                 iOK2Del=1;
             }
         } 
@@ -675,8 +675,8 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
             printf("CertGetName failed.");
         }
 
-        if(!_stricmp(pszIssuer, pszIssuerString)){
-            if(!_stricmp(pszUsername ,pszNameString)){
+        if(_stricmp(pszIssuer, pszIssuerString) == 0){
+            if(_stricmp(pszUsername ,pszNameString) == 0){
                 ret=1;
             }
         } 
@@ -764,6 +764,9 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *psz
     PKCS12 *pkcs12=NULL;
     CRYPT_DATA_BLOB fpx;
     BOOL bRet=FALSE;
+    PCCERT_CONTEXT pCurrentContext = NULL;
+    HCERTSTORE hMemoryStore = NULL;
+
 
     char pszNameString[256];
     char pszIssuerString[256];
@@ -781,15 +784,31 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *psz
             printf("CertGetName failed.");
         }
 
-        if(!_stricmp(pszIssuer, pszIssuerString)){
-            if(!_stricmp(pszUserName ,pszNameString)){
+        if(_stricmp(pszIssuer, pszIssuerString) == 0){
+            if(_stricmp(pszUserName ,pszNameString) == 0){
                 memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
                 fpx.pbData=NULL;
 
-                bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+
+                hMemoryStore = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL,0, NULL);
+                if (hMemoryStore == NULL) {
+                    break;
+                }
+
+                pCurrentContext = CertDuplicateCertificateContext(pCertContext);
+                
+                if (!CertAddCertificateContextToStore(hMemoryStore, pCurrentContext,
+                    CERT_STORE_ADD_ALWAYS, NULL)) {
+                        printf("Failed to addCertificateContextToStore hMemoryStore\n");
+                        CertCloseStore(hMemoryStore, CERT_CLOSE_STORE_CHECK_FLAG);
+                        break;
+                }
+
+
+                bRet=PFXExportCertStoreEx(hMemoryStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
                 if(bRet){
                      fpx.pbData=(unsigned char*)malloc(fpx.cbData);
-                     bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+                     bRet=PFXExportCertStoreEx(hMemoryStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
                      if(bRet)
                      {
                          BIO* bio=BIO_new_mem_buf(fpx.pbData,fpx.cbData);
@@ -801,9 +820,12 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *psz
                      {
                          free(fpx.pbData);
                      }
-                     break;//找到一个，就直接退出
                 }
 
+                if(hMemoryStore != NULL) CertCloseStore(hMemoryStore, CERT_CLOSE_STORE_CHECK_FLAG);
+                if(pCurrentContext != NULL) CertFreeCertificateContext(pCurrentContext);
+
+                if(pkcs12 != NULL) break;
             }
         } 
     } // end while
