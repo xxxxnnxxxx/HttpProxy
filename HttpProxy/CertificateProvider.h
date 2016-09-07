@@ -32,7 +32,7 @@ public:
     static int          savePriKeytofile(EVP_PKEY *pkey, char*path);
     static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char* pos);
     static int          addCert2WindowsAuth(X509* x509, const char *pos);  
-    static int          addCert2WindowsAuth(PKCS12*pkcs12, const char *pos,wchar_t* password);
+    static int          addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, char* password);
     static int          exportx509(X509* x509, unsigned char* buf, int len);
     static int          importx509(X509**pX509, unsigned char* buf, int len);
     static int          x509_certify(X509*x,X509*xca, EVP_PKEY*pkey_ca); /*CAÇ©Ãû*/
@@ -42,7 +42,7 @@ public:
     static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA);    //x509×ªÎªpkcs12
     static int          pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA);
     static void         del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername);
-    static PKCS12*      get_pkcs12fromWindowsAuth(wchar_t*pszpwd,char *pszIssuer,char*pszCertStore,char*pszUserName);
+    static PKCS12*      get_pkcs12fromWindowsAuth(char* pszpwd, char *pszIssuer, char*pszCertStore, char*pszUserName);
 private:
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);

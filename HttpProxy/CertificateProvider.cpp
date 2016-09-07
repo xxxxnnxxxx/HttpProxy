@@ -323,7 +323,7 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
     return ret;
 }
 
-int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar_t*password)
+int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, char* password)
 {
     int ret=0;
     int len_pkcs12=0;
@@ -332,6 +332,9 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar
     CRYPT_DATA_BLOB cdb;
     HCERTSTORE hImportCertStore=NULL;
     HCERTSTORE hRootCertStore=NULL;
+    wchar_t *pwspwd = NULL;
+
+    CommonFuncs::a2w(password, &pwspwd);
 
 
     len_pkcs12 = i2d_PKCS12(pkcs12, &buf_pkcs12);
@@ -340,7 +343,7 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar
 
         cdb.cbData=len_pkcs12;
         cdb.pbData=buf_pkcs12;
-        hImportCertStore=PFXImportCertStore(&cdb,password,CRYPT_EXPORTABLE);
+        hImportCertStore=PFXImportCertStore(&cdb,pwspwd,CRYPT_EXPORTABLE);
         
         //读取证书内容
         if(hImportCertStore)
@@ -357,6 +360,8 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12,const char *pos,wchar
         else
             error=GetLastError();
     }
+
+    if( pwspwd != NULL ) free(pwspwd);
 
 
     return ret;
@@ -756,7 +761,7 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
     return ret;
 }
 
-PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *pszIssuer,char*pszCertStore,char*pszUserName)
+PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIssuer, char*pszCertStore, char*pszUserName)
 {
     int ret=0;
     HANDLE          hStoreHandle;
@@ -766,10 +771,13 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *psz
     BOOL bRet=FALSE;
     PCCERT_CONTEXT pCurrentContext = NULL;
     HCERTSTORE hMemoryStore = NULL;
+    wchar_t *pwspwd = NULL;
 
 
     char pszNameString[256];
     char pszIssuerString[256];
+
+    CommonFuncs::a2w(pszpwd,&pwspwd);
 
     if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
         printf("The store was not opened.");
@@ -805,10 +813,10 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *psz
                 }
 
 
-                bRet=PFXExportCertStoreEx(hMemoryStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+                bRet=PFXExportCertStoreEx(hMemoryStore,&fpx,pwspwd,NULL,EXPORT_PRIVATE_KEYS);
                 if(bRet){
                      fpx.pbData=(unsigned char*)malloc(fpx.cbData);
-                     bRet=PFXExportCertStoreEx(hMemoryStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+                     bRet=PFXExportCertStoreEx(hMemoryStore,&fpx,pwspwd,NULL,EXPORT_PRIVATE_KEYS);
                      if(bRet)
                      {
                          BIO* bio=BIO_new_mem_buf(fpx.pbData,fpx.cbData);
@@ -831,6 +839,8 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(wchar_t *pszpwd,char *psz
     } // end while
 
     CertCloseStore(hStoreHandle, 0);
+
+    if(pwspwd != NULL) free(pwspwd);
 
 
     return pkcs12;
