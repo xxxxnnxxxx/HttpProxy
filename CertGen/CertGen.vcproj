@@ -186,6 +186,10 @@
 				RelativePath="..\HttpProxy\CommonFuncs.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\getopt.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
