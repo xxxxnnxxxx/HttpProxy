@@ -80,7 +80,8 @@ X509 *CertificateProvider::load_cert(const char *file, int format)
 */
 X509 * CertificateProvider::csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey)
 {
-    if (x509_req == NULL || pKey == NULL)return NULL;
+    if (x509_req == NULL || pKey == NULL)
+        return NULL;
 
     return X509_REQ_to_X509(x509_req, 2000, pKey);
 }
@@ -98,12 +99,15 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
     }
 
     RSA * rsa = RSA_generate_key(numofbits, RSA_F4, NULL, NULL);
+
     if (!EVP_PKEY_assign_RSA(pkey, rsa))
     {
-        printf("Unable to generate 2048-bit RSA key.\n");
         EVP_PKEY_free(pkey);
         return NULL;
     }
+
+    if(rsa != NULL)
+        RSA_free(rsa);
 
     return pkey;
 }
@@ -111,31 +115,33 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
 /*
 导出私钥
 */
-int CertificateProvider::exportPriKey(EVP_PKEY *pKey,unsigned char *buf, int len)
+int CertificateProvider::exportPriKey(EVP_PKEY *pKey, unsigned char *buf, int len)
 {
-    int len_prikey=0;
-    unsigned char *buf_prikey=NULL;
+    int len_prikey = 0;
+    unsigned char *buf_prikey = NULL;
 
     //加密x509 to DER
     len_prikey = i2d_PrivateKey(pKey, &buf_prikey);
     if(len_prikey<0)
         return 0;
 
-    if(buf==NULL || len==0)
-    {
-        if(len_prikey!=NULL)
+    if(buf == NULL || len == 0){
+
+        if(len_prikey != NULL)
             OPENSSL_free(buf_prikey);
         return len_prikey;
     }
 
-    if(::IsBadReadPtr(buf,len)){
+    if(::IsBadReadPtr(buf, len)){
         OPENSSL_free(buf_prikey);
         return 0;
     }
 
-    memcpy_s(buf,len,buf_prikey,((len>len_prikey)?len_prikey:len));
-    if(buf_prikey!=NULL)
+    memcpy_s(buf, len, buf_prikey, ((len>len_prikey)?len_prikey:len));
+
+    if(buf_prikey != NULL)
         OPENSSL_free(buf_prikey);
+
     return len_prikey;
 }
 
@@ -145,9 +151,6 @@ int CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int 
 
     pPriKey = d2i_PrivateKey(EVP_PKEY_RSA,ppKey,(const unsigned char**)&buf, len);
 
-    if(pPriKey != NULL) {
-        
-    }
     return (int)pPriKey;
 }
 /*
@@ -203,7 +206,6 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
     X509 * x509 = X509_new();
     if (!x509)
     {
-        printf("Unable to create X509 structure.\n");
         return NULL;
     }
 
@@ -325,8 +327,8 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
 
 int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, char* password)
 {
-    int ret=0;
-    int len_pkcs12=0;
+    int ret = 0;
+    int len_pkcs12 = 0;
     unsigned char* buf_pkcs12=NULL;
     int error=0;
     CRYPT_DATA_BLOB cdb;
@@ -338,6 +340,7 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, cha
 
 
     len_pkcs12 = i2d_PKCS12(pkcs12, &buf_pkcs12);
+
     if (buf_pkcs12 > 0)
     {
 
@@ -368,31 +371,28 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, cha
 }
 
 /*buf=NULL || len==0 返回需要的内存空间长度*/
-int CertificateProvider::exportx509(X509* x509,unsigned char *buf,int len)
+int CertificateProvider::exportx509(X509* x509, unsigned char *buf, int len)
 {
     int len_x509=0;
-    unsigned char *buf_x509=NULL;
+    unsigned char *buf_x509 = NULL;
 
     //加密x509 to DER
     len_x509 = i2d_X509(x509, &buf_x509);
-    if(len_x509<0)
+    if(len_x509 < 0)
         return 0;
 
-    if(buf==NULL || len==0)
+    if(buf == NULL || len == 0)
     {
-        if(buf_x509!=NULL)
+        if(buf_x509 != NULL)
             OPENSSL_free(buf_x509);
         return len_x509;
     }
 
-    if(::IsBadReadPtr(buf,len)){
-        OPENSSL_free(buf_x509);
-        return 0;
-    }
 
     memcpy_s(buf,len,buf_x509,((len>len_x509)?len_x509:len));
     if(buf_x509!=NULL)
         OPENSSL_free(buf_x509);
+
     return len_x509;
 }
 
@@ -402,40 +402,39 @@ int CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len)
     X509 *x509 = NULL;
 
     x509=d2i_X509(pX509,(const unsigned char**)&buf,len);
-    if(x509!=NULL)
-    {
-        
-    }
+
     return (int)x509;
 }
 
 int CertificateProvider::saveX509tofile(X509* x509,char *path)
 {
-    unsigned char * buf=NULL;
-    HANDLE hFile=INVALID_HANDLE_VALUE;
-    int ret=0;
-    DWORD dwWrited=0;
-    int len=exportx509(x509,NULL,0);
+    unsigned char * buf = NULL;
+    FILE *fp = NULL;
+    size_t retsize = 0;
+    errno_t error = 0;
+    int ret = 0;
+    DWORD dwWrited = 0;
+    int len = exportx509(x509,NULL,0);
     if(len<=0)
         return 0;
 
-    buf=(unsigned char*)malloc(len);
+    buf = (unsigned char*)malloc(len);
     memset(buf,0,len);
 
-    len=exportx509(x509,buf,len);
+    len = exportx509(x509,buf,len);
 
-    hFile=::CreateFileA(path,GENERIC_WRITE,FILE_SHARE_READ,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
-    if(hFile!=INVALID_HANDLE_VALUE)
+    error = fopen_s(&fp, path, "wb+");
+    if(error == 0)
     {
-        BOOL bRet=::WriteFile(hFile,buf,len,&dwWrited,NULL);
-        if(bRet)
+        retsize = fwrite(buf, 1, len, fp);
+        if(retsize == len)
             ret=len;
         else
             ret=0;
     }
 
-    if(hFile!=INVALID_HANDLE_VALUE)
-        CloseHandle(hFile);
+    if(fp != NULL)
+        fclose(fp);
 
     if(buf!=NULL)
     {
@@ -456,7 +455,9 @@ int CertificateProvider::pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
     stmp = OPENSSL_strdup(value);
     if (!stmp)
         return -1;
+
     vtmp = strchr(stmp, ':');
+
     if (vtmp) {
         *vtmp = 0;
         vtmp++;
@@ -473,8 +474,10 @@ int CertificateProvider::do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP
 
     if (ctx == NULL)
         return 0;
+
     if (!EVP_DigestSignInit(ctx, &pkctx, md, NULL, pkey))
         return 0;
+
     for (i = 0; i < sk_OPENSSL_STRING_num(sigopts); i++) {
         char *sigopt = sk_OPENSSL_STRING_value(sigopts, i);
         if (pkey_ctrl_string(pkctx, sigopt) <= 0) {
@@ -568,10 +571,6 @@ PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char *passwo
     }
     ppkcs12 = PKCS12_create(password,aname , pkey, x509, cacertstack,0,0, 0, 0, 0);
     
-    if(ppkcs12!=NULL)
-    {
-       
-    }
 
     return ppkcs12;
 }
@@ -582,14 +581,14 @@ int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**
     int ret=0;
     STACK_OF(X509) *cacertstack=NULL;
 
-    if(::IsBadReadPtr(pass,len))
+    /*if(::IsBadReadPtr(pass,len))
         return 0;
 
     if(*(pass+len)!='\0')
-        return 0;
+        return 0;*/
 
 
-    ret=PKCS12_parse(pkcs12,pass,pkey,cert,&cacertstack);
+    ret=PKCS12_parse(pkcs12, pass, pkey, cert, &cacertstack);
 
     if(ret!=1)
     {
@@ -597,10 +596,13 @@ int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**
     }
 
     //get the ca stack
-    if(cacertstack!=NULL)
+    if(cacertstack != NULL)
     {
         *CA=sk_X509_pop(cacertstack);
     }
+
+    if( cacertstack != NULL)
+        sk_X509_pop_free(cacertstack, X509_free);
 
     return ret;
 }
