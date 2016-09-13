@@ -658,6 +658,7 @@ void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *p
         iOK2Del = 0;
     } // end while
 
+    CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
 
 
@@ -691,8 +692,10 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
                 ret=1;
             }
         } 
-    } // end while
 
+        
+    } // end while
+    CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
     return ret;
 }
@@ -760,11 +763,15 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
             if(fpx.pbData!=NULL)
             {
                 free(fpx.pbData);
+                fpx.pbData = NULL;
             }
             break;//找到一个，就直接退出
         }
+
+
     } // end while
 
+    CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
 
 
@@ -790,7 +797,12 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
     CommonFuncs::a2w(pszpwd,&pwspwd);
 
     if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
-        printf("The store was not opened.");
+        return NULL;
+    }
+
+    hMemoryStore = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL,0, NULL);
+    if (hMemoryStore == NULL) {
+        return NULL;
     }
 
     while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
@@ -807,13 +819,8 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
                 memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
                 fpx.pbData=NULL;
 
-
-                hMemoryStore = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL,0, NULL);
-                if (hMemoryStore == NULL) {
-                    break;
-                }
-
                 pCurrentContext = CertDuplicateCertificateContext(pCertContext);
+                
                 
                 if (!CertAddCertificateContextToStore(hMemoryStore, pCurrentContext,
                     CERT_STORE_ADD_ALWAYS, NULL)) {
@@ -837,18 +844,21 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
                      if(fpx.pbData!=NULL)
                      {
                          free(fpx.pbData);
+                         fpx.pbData = NULL;
                      }
                 }
-
-                if(hMemoryStore != NULL) CertCloseStore(hMemoryStore, CERT_CLOSE_STORE_CHECK_FLAG);
                 if(pCurrentContext != NULL) CertFreeCertificateContext(pCurrentContext);
 
                 if(pkcs12 != NULL) break;
             }
         } 
+        
+        
     } // end while
 
-    CertCloseStore(hStoreHandle, 0);
+    CertFreeCertificateContext(pCertContext);
+    if(hMemoryStore != NULL) CertCloseStore(hMemoryStore, CERT_CLOSE_STORE_CHECK_FLAG);
+    if(hStoreHandle != NULL) CertCloseStore(hStoreHandle, 0);
 
     if(pwspwd != NULL) free(pwspwd);
 
