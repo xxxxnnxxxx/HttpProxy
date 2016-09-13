@@ -151,8 +151,8 @@ void SSLSocketStream::uninit()
         EVP_PKEY_free(m_keypair);
         m_keypair=NULL;
     }
-    if(m_send_bio!=NULL) BIO_free(m_send_bio);
-    if(m_recv_bio!=NULL) BIO_free(m_recv_bio);
+
+    
 }
 char * SSLSocketStream::get_OpenSSL_Error() 
 {
@@ -291,7 +291,7 @@ void SSLSocketStream::init_keycert(void*buf,int len)
     else
     {
         m_keypair = CertificateProvider::generate_keypair(2048);
-        m_x509   = CertificateProvider::generate_certificate(m_keypair,purl, purl, purl, CertificateProvider::DEF_DAYS);
+        m_x509 = CertificateProvider::generate_certificate(m_keypair,purl, purl, purl, CertificateProvider::DEF_DAYS);
         ret = g_BaseSSLConfig->CA(m_x509);
         pkcs12 = CertificateProvider::x509topkcs12(m_x509,m_keypair,PASSWORD,NULL,NULL);
         CertificateProvider::addCert2WindowsAuth(pkcs12, "MY", PASSWORD);

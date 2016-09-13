@@ -33,11 +33,8 @@ AcceptConnection::AcceptConnection(HANDLE hCompletionPort, SOCKET acp, sockaddr_
     m_httpservice_params.port = 8206;
     strcpy_s(m_httpservice_params.ip, 16, "127.0.0.1");
 
+    memcpy_s(&m_httpservice_params, sizeof(HTTPSERVICE_PARAMS), pHttpService_Params, sizeof(HTTPSERVICE_PARAMS));
 
-    if (!::IsBadReadPtr(pHttpService_Params, sizeof(HTTPSERVICE_PARAMS))) {
-        //不能读取参数大小的内存
-        memcpy_s(&m_httpservice_params, sizeof(HTTPSERVICE_PARAMS), pHttpService_Params, sizeof(HTTPSERVICE_PARAMS));
-    }
 
     
     //初始化处理

@@ -22,7 +22,7 @@ class  SSLSocketStream:public BaseSocketStream
 {
 public:
     SSLSocketStream(char**pprecv_buf, DWORD *len_recv_buf, char**ppsend_buf, DWORD *len_send_buf);
-    ~SSLSocketStream();
+    virtual ~SSLSocketStream();
     static void _init_syn();
     static void _entry_();
     static void _leave_();

@@ -147,7 +147,7 @@ void BaseHTTPRequestHandler::do_GET()
             //下面把得到的数据根据SocketStream写入流中
             size_t result_size = 0;
             result_size = len_httpheaders + len_httpcontent + strlen(response_httpheaders.m_version) + 50;
-            result = (char*)malloc(result_size);
+            result = (char*)::malloc(result_size);
             memset(result, 0, result_size);
             //计算得出返回的头的首部
             char *descript = HttpHeaders::get_status_code_descript(response_httpheaders.m_response_status);
@@ -459,6 +459,7 @@ void BaseHTTPRequestHandler::invokeRequestCallback(HttpHeaders *http_headers)
     //处理完之后，清理掉内存
     if (callback_data.buf != NULL) {
         free(callback_data.buf);
+        callback_data.buf = NULL;
     }
 }
 
@@ -485,6 +486,7 @@ void BaseHTTPRequestHandler::invokeResponseCallback(char *buf,size_t len)
     //处理完之后，清理掉内存
     if (callback_data.buf != NULL) {
         free(callback_data.buf);
+        callback_data.buf = NULL;
     }
 }
 /*

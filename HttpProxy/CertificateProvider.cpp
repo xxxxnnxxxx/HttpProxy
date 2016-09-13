@@ -106,8 +106,8 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
         return NULL;
     }
 
-    if(rsa != NULL)
-        RSA_free(rsa);
+    /*if(rsa != NULL)
+        RSA_free(rsa);*/
 
     return pkey;
 }
@@ -216,6 +216,7 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
     X509_gmtime_adj(X509_get_notAfter(x509), 31536000L);
     X509_time_adj_ex(X509_get_notAfter(x509), days, 0, NULL);
     X509_set_pubkey(x509, pkey);
+    
     X509_NAME * name = X509_get_subject_name(x509);
 
     if(aserial!=NULL)
@@ -357,7 +358,10 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, cha
             if(pCertContext!=NULL)
             {
                 hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-                ret = CertAddCertificateContextToStore(hRootCertStore, pCertContext, CERT_STORE_ADD_REPLACE_EXISTING, NULL);
+                ret = CertAddCertificateContextToStore(hRootCertStore, 
+                                                        pCertContext, 
+                                                        CERT_STORE_ADD_REPLACE_EXISTING, 
+                                                        NULL);
             }
         }
         else
@@ -740,8 +744,12 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
                 tmplen = CommonFuncs::w2a(pszpwd,&ptmp);
                 if(pkcs12_getx509(pkcs12, ptmp, tmplen, &pX09, &pPriKey,&ca))
                 {
-                    EVP_PKEY * pubkey = X509_get_pubkey(x509);
-                    ret = X509_verify(pX09,pubkey);
+                    if(pX09 != NULL) {
+                        EVP_PKEY * pubkey = X509_get_pubkey(x509);
+
+                        ret = X509_verify(pX09,pubkey);
+                    }
+
                 }
 
                 if(ptmp != NULL) free(ptmp);

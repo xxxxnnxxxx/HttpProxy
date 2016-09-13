@@ -27,7 +27,7 @@
 
 
 typedef struct _CALLBACK_DATA_ {
-    ULONG   cdt; //回调类型
+    ULONG   cdt; //回调类型(空缺)
     char *  buf;
     DWORD   len;
 }CALLBACK_DATA,*PCALLBACK_DATA;
@@ -50,6 +50,7 @@ typedef struct _SERVICE_CONTROL_ {
 
 
 //回调函数的过程不应过于耗时，耗时太长，容易造成网络连接失败，返回错误的信息
+// *注意* 回调传入的数据不需要用户释放
 typedef void( __stdcall *_Request_Callback_)(PCALLBACK_DATA);                 //接收到完整的请求头后调用
 typedef void( __stdcall *_Response_Callback_)(PCALLBACK_DATA);                //接收到服务请的响应后，执行调用
 

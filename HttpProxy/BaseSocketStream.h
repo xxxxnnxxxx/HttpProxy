@@ -8,7 +8,7 @@ class  BaseSocketStream
 {
 public:
     BaseSocketStream(char**pprecv_buf,DWORD *len_recv_buf,char**ppsend_buf,DWORD *len_send_buf);
-    ~BaseSocketStream();
+    virtual ~BaseSocketStream();
 
     enum {
         BSS_RET_ERROR=-1,

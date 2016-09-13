@@ -120,10 +120,10 @@ int HttpRequest::http_request(HttpHeaders *request_headers,
 
                 chunk = curl_slist_append(chunk, buf);
 
-                if (buf != NULL) {
+                /*if (buf != NULL) {
                     free(buf);
                     buf = NULL;
-                }
+                }*/
             }
         }
 
@@ -160,7 +160,7 @@ int HttpRequest::http_request(HttpHeaders *request_headers,
         res = curl_easy_perform(curl);
         res = (CURLcode)handleError(res, response_headers, response_content);
         /* always cleanup */
-        if (uri != NULL)free(uri);
+        if (uri != NULL) free(uri);
         curl_easy_cleanup(curl);
         curl_slist_free_all(chunk);
         chunk = NULL;
@@ -204,10 +204,10 @@ int HttpRequest::https_request(HttpHeaders *request_headers,
                 memcpy_s(buf + Len_key + 1, Len_val + 1, val, Len_val);
 
                 chunk = curl_slist_append(chunk, buf);
-                if (buf != NULL) {
+                /*if (buf != NULL) {
                     free(buf);
                     buf = NULL;
-                }
+                }*/
             }
         }
 

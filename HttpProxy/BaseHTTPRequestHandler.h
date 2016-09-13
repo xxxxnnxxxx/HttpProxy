@@ -12,7 +12,7 @@
 class BaseHTTPRequestHandler:public BaseDataHandler {
 public:
     BaseHTTPRequestHandler(HTTPSERVICE_PARAMS *pHttpService_Params, HttpSession * pHttpSession);
-    ~BaseHTTPRequestHandler();
+   virtual ~BaseHTTPRequestHandler();
 public:
     virtual void do_OPTIONS();
     virtual void do_GET();
