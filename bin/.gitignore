@@ -5,3 +5,4 @@ HttpProxyServer.ilk
 HttpProxyServer.pdb
 *.pem
 /debug/
+HttpProxy.lib
