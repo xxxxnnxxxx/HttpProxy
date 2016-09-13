@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\bin\debug\httpproxy.lib ws2_32.lib Crypt32.lib Wininet.lib libcurl_d.lib pcre2_8d.lib libeay32MTd.lib ssleay32MTd.lib"
+				AdditionalDependencies="..\bin\httpproxy.lib ws2_32.lib Crypt32.lib Wininet.lib libcurl_d.lib pcre2_8d.lib libeay32MTd.lib ssleay32MTd.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\lib"
 				GenerateDebugInformation="true"

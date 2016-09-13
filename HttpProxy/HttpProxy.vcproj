@@ -18,7 +18,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)bin\debug\"
+			OutputDirectory="$(SolutionDir)bin\"
 			IntermediateDirectory="$(ConfigurationName)\"
 			ConfigurationType="4"
 			CharacterSet="1"
@@ -26,7 +26,7 @@
 			<Tool
 				Name="VCPreBuildEventTool"
 				Description="generate headers about rootcert and prikey"
-				CommandLine="set PATH=..\tools&#x0D;&#x0A;xxd  -i ..\Cert_PriKey\PriKey.pem ..\HttpProxy\RootCert_PriKey\PriKey.h&#x0D;&#x0A;xxd -i ..\Cert_PriKey\RootCert.pem ..\HttpProxy\RootCert_PriKey\RootCert.h&#x0D;&#x0A;copy ..\Cert_PriKey\RootCertConfig.h ..\HttpProxy\RootCert_PriKey\RootCertConfig.h"
+				CommandLine="set PATH=..\tools&#x0D;&#x0A;xxd  -i ..\Cert_PriKey\PriKey.pem ..\HttpProxy\RootCert_PriKey\PriKey.h&#x0D;&#x0A;xxd -i ..\Cert_PriKey\RootCert.pem ..\HttpProxy\RootCert_PriKey\RootCert.h&#x0D;&#x0A;copy ..\Cert_PriKey\RootCertConfig.h ..\HttpProxy\RootCert_PriKey\RootCertConfig.h&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
