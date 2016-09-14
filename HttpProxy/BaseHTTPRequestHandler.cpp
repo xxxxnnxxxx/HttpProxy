@@ -449,8 +449,13 @@ void BaseHTTPRequestHandler::invokeRequestCallback(HttpHeaders *http_headers)
     CALLBACK_DATA callback_data;
     memset(&callback_data, 0, sizeof(CALLBACK_DATA));
     callback_data.len = http_headers->get_request_uri(NULL, 0);
-    callback_data.buf = (char*)malloc(callback_data.len);
-    memset(callback_data.buf, 0, callback_data.len);
+
+    if(callback_data.len == 0)
+        return;
+
+
+    callback_data.buf = (char*)malloc(callback_data.len + 1);
+    memset(callback_data.buf, 0, callback_data.len + 1);
 
     http_headers->get_request_uri(callback_data.buf, callback_data.len);
 
@@ -470,7 +475,7 @@ void BaseHTTPRequestHandler::invokeRequestCallback(HttpHeaders *http_headers)
 void BaseHTTPRequestHandler::invokeResponseCallback(char *buf,size_t len)
 {
     CALLBACK_DATA callback_data;
-    if(buf==NULL || len==0)
+    if(buf == NULL || len == 0)
         return;
 
     if(IsBadReadPtr(buf,len))

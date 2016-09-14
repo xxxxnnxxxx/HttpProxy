@@ -69,19 +69,19 @@ BaseSSLConfig* BaseSSLConfig::CreateInstance()
 
 BOOL BaseSSLConfig::InitRootCert()
 {
-    int ret = 0;
+    void* ret = NULL;
     PKCS12*pkcs12 = NULL;
     X509* CA = NULL;
 
     //导入证书文件
     ret = CertificateProvider::importx509(&m_rootcert, ___Cert_PriKey_RootCert_pem, ___Cert_PriKey_RootCert_pem_len);
-    if(!ret){
+    if( ret == NULL ){
         return FALSE;
     }
 
 
     ret = CertificateProvider::importPriKey(&m_rootkeypair, ___Cert_PriKey_PriKey_pem, ___Cert_PriKey_PriKey_pem_len);
-    if(!ret){
+    if( ret == NULL ){
         OPENSSL_free(m_rootcert);
         m_rootcert = NULL;
         m_rootkeypair = NULL;

@@ -145,13 +145,13 @@ int CertificateProvider::exportPriKey(EVP_PKEY *pKey, unsigned char *buf, int le
     return len_prikey;
 }
 
-int CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len)
+void * CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len)
 {
     EVP_PKEY *pPriKey = NULL;
 
     pPriKey = d2i_PrivateKey(EVP_PKEY_RSA,ppKey,(const unsigned char**)&buf, len);
 
-    return (int)pPriKey;
+    return (void *)pPriKey;
 }
 /*
 保存私钥到文件
@@ -400,14 +400,14 @@ int CertificateProvider::exportx509(X509* x509, unsigned char *buf, int len)
     return len_x509;
 }
 
-int CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len)
+void* CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len)
 {
     int len_x509 = 0;
     X509 *x509 = NULL;
 
     x509=d2i_X509(pX509,(const unsigned char**)&buf,len);
 
-    return (int)x509;
+    return (void*)x509;
 }
 
 int CertificateProvider::saveX509tofile(X509* x509,char *path)
@@ -582,17 +582,10 @@ PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char *passwo
 //通过PKCS12获取证书和私钥，返回正确非0，错误0
 int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA)
 {
-    int ret=0;
+    int ret = 0;
     STACK_OF(X509) *cacertstack=NULL;
 
-    /*if(::IsBadReadPtr(pass,len))
-        return 0;
-
-    if(*(pass+len)!='\0')
-        return 0;*/
-
-
-    ret=PKCS12_parse(pkcs12, pass, pkey, cert, &cacertstack);
+    ret = PKCS12_parse(pkcs12, pass, pkey, cert, &cacertstack);
 
     if(ret!=1)
     {
