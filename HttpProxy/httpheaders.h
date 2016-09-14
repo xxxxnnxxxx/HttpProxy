@@ -42,7 +42,8 @@ public:
     static char * get_status_code_descript(int statuscode);
     int  parse_request_line(char *rl, int len);
     int  parse_response_line(char *rl, int len);
-    size_t  get_request_uri(char *buf, size_t len);   //获取请求的整个uri
+    size_t  get_request_uri(char *buf, size_t len);   //获取请求的整个uri,对于https的形式，一般会包括host属性
+    int  set_request_uri(char *buf, size_t len);      //设置主机的uri,主要是请求首行的,如果针对了host的修改，则会修改host属性
 private:
     int m_count;                //保存的key_val的数组长度
     LIST_ENTRY m_ListHeader;

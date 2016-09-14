@@ -494,6 +494,54 @@ size_t HttpHeaders::get_request_uri(char *buf, size_t len)
     }
     return result;
 }
+/*正确返回非0*/
+/*
+整体的httpheaders需要进行调整
+可以方便的修改属性等特征
+*/
+int HttpHeaders::set_request_uri(char *buf, size_t len)
+{
+    int ret = 0;
+    
+    if(buf == NULL || len == 0 ) return 0;
+
+    do 
+    {
+        //判断原有的m_uri是否有http或https的形式
+        if (_strnicmp(m_uri, "http",4) == 0) {
+                //释放原有的m_uri
+            free( m_uri );
+            m_uri = NULL;
+
+            m_uri = (char*) malloc(len + 1);
+            memset( m_uri, 0, len + 1);
+
+            memcpy_s(m_uri, len, buf, len);
+
+            ret = 1;
+            break;
+        }
+
+        if( _strnicmp(buf, m_host, strlen(m_host)) == 0){
+            
+            char *pUri =(char*)(buf+ strlen(m_host));
+            
+            free(m_uri);
+            m_uri = NULL;
+
+            m_uri = (char*) malloc(len - strlen(m_host) + 1);
+            memset( m_uri, 0, len - strlen(m_host) + 1);
+
+            memcpy_s(m_uri, len - strlen(m_host), pUri, len - strlen(m_host));
+            ret = 1;
+            break;
+        }
+
+    } while (0);
+
+
+    return ret;
+}
 
 int HttpHeaders::separat_httpattributes(const char *attr)
 {
