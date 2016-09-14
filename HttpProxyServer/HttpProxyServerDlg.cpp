@@ -3,6 +3,7 @@
 //
 
 #include "stdafx.h"
+#include "CommonFuncs.h"
 #include "HttpProxyServer.h"
 #include "HttpProxyServerDlg.h"
 
@@ -45,7 +46,7 @@ END_MESSAGE_MAP()
 // CHttpProxyServerDlg 对话框
 
 
-
+CHttpProxyServerDlg * theHPSDialog = NULL;
 
 CHttpProxyServerDlg::CHttpProxyServerDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CHttpProxyServerDlg::IDD, pParent)
@@ -57,6 +58,8 @@ CHttpProxyServerDlg::CHttpProxyServerDlg(CWnd* pParent /*=NULL*/)
 
 void CHttpProxyServerDlg::DoDataExchange(CDataExchange* pDX)
 {
+    DDX_Control(pDX,IDC_LIST1,m_ctrl_requestlistbox);
+
 	CDialog::DoDataExchange(pDX);
 }
 
@@ -103,6 +106,10 @@ BOOL CHttpProxyServerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	ControlOpt();
+
+    theHPSDialog = this;
+
+    m_ctrl_requestlistbox.ResetContent();
 
     this->SetDlgItemInt(IDC_ET_PORT,8889);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -186,11 +193,26 @@ void CHttpProxyServerDlg::ControlOpt()
 }
 
 
+void __stdcall Request_Callback(PCALLBACK_DATA pcallback_data)
+{
+    theHPSDialog->insert_reqlist(pcallback_data->buf,pcallback_data->len);
+}
+
+
+void __stdcall Response_Callback(PCALLBACK_DATA pcallback_data)
+{
+#ifdef _DEBUG
+    // ::OutputDebugStringA("Default_Response_Callback\n");
+#endif
+}
+
 //配置
 void CHttpProxyServerDlg::OnConfig()
 {
     strcpy_s(m_httpservice_params.ip, 16, "127.0.0.1");
     m_httpservice_params.port = (WORD)this->GetDlgItemInt(IDC_ET_PORT);
+    m_httpservice_params.request_callback = Request_Callback;
+    //m_httpservice_params.response_callback = Response_Callback;
     m_httpservice_params.bSSH = FALSE;
 
     m_hProxyHttpService = Create_ProxyHttpService(&m_httpservice_params);
@@ -244,4 +266,17 @@ void CHttpProxyServerDlg::OnBnClickedButton1()
 #ifdef _DEBUG
     Unittest();
 #endif
+}
+
+
+
+void CHttpProxyServerDlg::insert_reqlist(const char* szurl, int len)
+{
+    wchar_t *pws = NULL;
+    CommonFuncs::a2w(szurl,&pws);
+    m_ctrl_requestlistbox.AddString((LPCTSTR)pws);
+    
+    if( pws != NULL){
+        free(pws);
+    }
 }

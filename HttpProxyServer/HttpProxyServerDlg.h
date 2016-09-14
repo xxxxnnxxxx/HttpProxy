@@ -40,7 +40,12 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
     afx_msg void OnClose();
     afx_msg void OnConfig();
-	DECLARE_MESSAGE_MAP()
-public:
     afx_msg void OnBnClickedButton1();
+	DECLARE_MESSAGE_MAP()
+
+public:
+    void insert_reqlist(const char* szurl, int len);
+private:
+    CListBox m_ctrl_requestlistbox;
+    
 };
