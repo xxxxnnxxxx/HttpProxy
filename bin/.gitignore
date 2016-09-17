@@ -6,3 +6,4 @@ HttpProxyServer.pdb
 *.pem
 /debug/
 HttpProxy.lib
+lua.lib
