@@ -75,7 +75,7 @@ HttpHeaders::HttpHeaders() {
 
     memset(m_version, 0, 10);
     memset(m_method, 0, 10);
-    m_length = 0;
+    //m_length = 0;
     m_count = 0;
     m_uri = NULL;
     m_host = NULL;
@@ -216,8 +216,8 @@ void HttpHeaders::insert(const char *key, const char *val) {
     InsertTailList(&m_ListHeader, (PLIST_ENTRY)&pKeyVal->list_entry);
 
     //计算buf长度
-    m_length += len_key;
-    m_length += len_val;
+   // m_length += len_key;
+   // m_length += len_val;
     //计数加一
     m_count++;
 }
@@ -242,8 +242,8 @@ void HttpHeaders::insert(const char *key, size_t len_key, const char *val, size_
 
 
     //计算buf长度
-    m_length += len_key;
-    m_length += len_val;
+  //  m_length += len_key;
+  //  m_length += len_val;
     //计数加一
     m_count++;
 }
@@ -258,7 +258,7 @@ char * HttpHeaders::getbuffer(size_t *len) {
     size_t pos = 0;
     //分配的长度的大小按属性的个数和空行的http头的特性分配内存
     //2*m_count =": \r\n"*m_count, 2="\r\n" 1=space
-    size_t len_result = m_length + 3 * m_count + 2 + 1;
+    size_t len_result = length() + 3 * m_count + 2 + 1;
     result = (char*)malloc(len_result);
     memset(result, 0, len_result);
     PLIST_ENTRY plist;
@@ -313,13 +313,6 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
 {
     int ret = 0;
     char * cheaders = NULL;
-    if (len == 0 || headers == NULL)
-        return 0L;
-
-    cheaders = (char*)malloc(len + 1);
-    memset(cheaders, 0, len + 1);
-    memcpy_s(cheaders, len + 1, headers, len);
-
     char *pItem = NULL;
     char *next_token = NULL;
     char *next_token2 = NULL;
@@ -328,6 +321,14 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
     char *d3 = ":"; //分析http协议属性
     char *pInfo = NULL;
     char *endstr = NULL;
+
+
+    if (len == 0 || headers == NULL)
+        return 0L;
+
+    cheaders = (char*)malloc(len + 1);
+    memset(cheaders, 0, len + 1);
+    memcpy_s(cheaders, len + 1, headers, len);
 
     pItem = strtok_s(cheaders, d, &next_token);
     switch (bHttpRequest) 
@@ -392,7 +393,6 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
 
         char*pPort = strstr(pHost, ":");
         if (pPort != NULL) {
-            //如果发现说明不时默认端口
             char *endptr = NULL;
             m_port = (WORD)strtol(pPort + 1, &endptr, 10);
             memcpy_s(m_host, len_host, pHost, pPort - pHost);
@@ -645,4 +645,19 @@ void  HttpHeaders::release() {
         free(m_host);
         m_host = NULL;
     }
+}
+
+size_t HttpHeaders::length()
+{
+    size_t result = 0;
+    PLIST_ENTRY plist;
+    struct _list_ *pelem = NULL;
+    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink)
+    {
+        pelem = CONTAINING_RECORD(plist, struct _list_, list_entry);
+        result += pelem->key_len;
+        result += pelem->val_len;
+    }
+
+    return result;
 }
