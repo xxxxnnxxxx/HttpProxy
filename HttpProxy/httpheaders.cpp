@@ -320,7 +320,6 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
     memset(cheaders, 0, len + 1);
     memcpy_s(cheaders, len + 1, headers, len);
 
-    //解析Http Headers放入http_items中
     char *pItem = NULL;
     char *next_token = NULL;
     char *next_token2 = NULL;
@@ -377,7 +376,7 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
         insert(pItem, pTemp);
 
         pItem = strtok_s(NULL, d, &next_token);
-        if (cheaders+len <= next_token)   //遍历长度不能超过头的总长度
+        if (cheaders+len <= next_token)
             break;
     }
 
