@@ -38,7 +38,7 @@ public:
     static int          x509_certify(X509*x,X509*xca, EVP_PKEY*pkey_ca); /*CA签名*/
     static int          saveX509tofile(X509* x509, char *path);/*正确返回证书的长度*/
     static int          is_certexist(char* pszIssuer, char* pszCertStore, char* pszUsername);
-    static int          is_certexist(X509 *x509, char *pszCertStore, wchar_t *pszpwd);/*根据已知证书判断系统中是否存在*/
+    static int          is_certexist(X509 *x509, char *pszCertStore, char *pszpwd);/*根据已知证书判断系统中是否存在*/
     static PKCS12*      x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA);/*x509保存为pkcs12*/
     static int          pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA);/*正确返回非0*/
     static void         del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername);

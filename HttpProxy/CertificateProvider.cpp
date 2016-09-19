@@ -694,7 +694,7 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
 }
 
 //
-int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *pszpwd)
+int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszpwd)
 {
     int ret = 0;
     HANDLE          hStoreHandle;
@@ -705,14 +705,17 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
     X509 *pX09 = NULL;
     EVP_PKEY *pPriKey = NULL;
     X509 *ca = NULL;
+    wchar_t * pwszpwd = NULL;
 
 
     char pszNameString[256];
     char pszIssuerString[256];
 
     if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
-        printf("The store was not opened.");
+        return 0;
     }
+
+    CommonFuncs::a2w(pszpwd, &pwszpwd);
 
     while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
         if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
@@ -726,19 +729,17 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
         memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
         fpx.pbData=NULL;
 
-        bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+        bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pwszpwd,NULL,EXPORT_PRIVATE_KEYS);
         if(bRet){
             fpx.pbData=(unsigned char*)malloc(fpx.cbData);
-            bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+            bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pwszpwd,NULL,EXPORT_PRIVATE_KEYS);
             if(bRet)
             {
-                char *ptmp = NULL;
                 int tmplen = 0;
                 BIO* bio = BIO_new_mem_buf(fpx.pbData,fpx.cbData);
                 pkcs12 = d2i_PKCS12_bio(bio,&pkcs12);
                 BIO_free(bio);
-                tmplen = CommonFuncs::w2a(pszpwd,&ptmp);
-                if(pkcs12_getx509(pkcs12, ptmp, tmplen, &pX09, &pPriKey,&ca))
+                if(pkcs12_getx509(pkcs12, pszpwd, tmplen, &pX09, &pPriKey,&ca))
                 {
                     if(pX09 != NULL) {
                         EVP_PKEY * pubkey = X509_get_pubkey(x509);
@@ -748,7 +749,6 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
 
                 }
 
-                if(ptmp != NULL) free(ptmp);
                 OPENSSL_free(pX09);
                 EVP_PKEY_free(pPriKey);
             }
@@ -764,6 +764,10 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
 
     } // end while
 
+    if( pwszpwd != NULL){
+        free(pwszpwd);
+        pwszpwd = NULL;
+    }
     CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
 

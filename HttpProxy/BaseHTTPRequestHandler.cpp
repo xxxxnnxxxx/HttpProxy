@@ -296,7 +296,7 @@ void BaseHTTPRequestHandler::connect_intercept()
     }
     //ÏìÓ¦CONNECTÏûÏ¢
     char temp[1024] = { 0 };
-    wsprintfA(temp, "%s %d %s\r\n\r\n", "HTTP/1.1", 200, "Connection Established");
+    wsprintfA(temp, "%s %d %s\r\n\r\n", http_items.m_version, 200, "Connection Established");
     m_pHttpSession->m_pSendbuf = (char*)malloc(strlen(temp));
     memset(m_pHttpSession->m_pSendbuf, 0, strlen(temp));
     memcpy_s(m_pHttpSession->m_pSendbuf, strlen(temp), temp, strlen(temp));
