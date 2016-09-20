@@ -95,7 +95,7 @@ void BaseHTTPRequestHandler::do_GET()
     char classname[256] = { 0 };
 
     //对HTTP/1.1以前版本的Proxy-Connection的过滤
-    char *pProxy_Connection = http_items["Proxy-Connection"];
+    /*char *pProxy_Connection = http_items["Proxy-Connection"];
     if (pProxy_Connection != NULL) {
         http_items.del(pProxy_Connection);
         
@@ -103,7 +103,8 @@ void BaseHTTPRequestHandler::do_GET()
         if (pConnection == NULL) {
             http_items.insert("Connection", "Keep-Alive");
         }
-    }
+    }*/
+    headerfilterforAgent(&http_items); //清空指定的字段，防止哑代理
 
     //根据http/https的不同调用不同的方法
     if (m_pHttpService_Params->bSSH) {
@@ -135,7 +136,7 @@ void BaseHTTPRequestHandler::do_GET()
                 m_pHttpSession->m_bKeepAlive = FALSE;
                 break;
             }
-            //??????????????
+
             m_pHttpSession->m_resultstate = HttpSession::HS_RESULT_OK;
 
             //过滤返回的头，去掉HTTP严格传输安全协议
@@ -167,7 +168,7 @@ void BaseHTTPRequestHandler::do_GET()
             
 
             //获取连接状态
-            char stralive[255] = { 0 };
+            /*char stralive[255] = { 0 };
             char *palive = NULL;
             if ((palive = (response_httpheaders["Connection"])) != NULL) {
 
@@ -178,7 +179,7 @@ void BaseHTTPRequestHandler::do_GET()
                 }
             }
             else
-                m_pHttpSession->m_bKeepAlive = TRUE;
+                m_pHttpSession->m_bKeepAlive = TRUE;*/
 
         }
 
@@ -324,7 +325,7 @@ void BaseHTTPRequestHandler::connect_relay()
 */
 void BaseHTTPRequestHandler::headerfilterforAgent(HttpHeaders*pHttpHeaders)
 {
-    char *list[] = { "Proxy-Connection","proxy-authenticate","proxy-authorization","Strict-Transport-Security",NULL };
+    char *list[] = { "Proxy-Connection","proxy-authenticate","proxy-authorization","Strict-Transport-Security","Connection",NULL };
     int i = 0;
     char *p = NULL;
     for (;; i++) {
@@ -476,9 +477,6 @@ void BaseHTTPRequestHandler::invokeResponseCallback(char *buf,size_t len)
 {
     CALLBACK_DATA callback_data;
     if(buf == NULL || len == 0)
-        return;
-
-    if(IsBadReadPtr(buf,len))
         return;
 
     memset(&callback_data, 0, sizeof(CALLBACK_DATA));

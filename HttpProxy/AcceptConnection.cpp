@@ -130,9 +130,9 @@ int AcceptConnection::HandleIoCompletion(DWORD numberbytes, session_overlapped  
             m_httpsession.revert();
             m_bytessend = 0;
 
-            if(m_httpsession.m_bKeepAlive==FALSE)
+            /*if(m_httpsession.m_bKeepAlive==FALSE)
                 m_commstate = CLOSING;
-            else
+            else*/
                 m_commstate = RECVING;
         }      
     }

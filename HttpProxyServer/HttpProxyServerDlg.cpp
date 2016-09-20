@@ -202,7 +202,7 @@ void __stdcall Request_Callback(PCALLBACK_DATA pcallback_data)
 void __stdcall Response_Callback(PCALLBACK_DATA pcallback_data)
 {
 #ifdef _DEBUG
-    // ::OutputDebugStringA("Default_Response_Callback\n");
+     ::OutputDebugStringA("Response_Callback\n");
 #endif
 }
 
@@ -212,7 +212,7 @@ void CHttpProxyServerDlg::OnConfig()
     strcpy_s(m_httpservice_params.ip, 16, "127.0.0.1");
     m_httpservice_params.port = (WORD)this->GetDlgItemInt(IDC_ET_PORT);
     m_httpservice_params.request_callback = Request_Callback;
-    //m_httpservice_params.response_callback = Response_Callback;
+    m_httpservice_params.response_callback = Response_Callback;
     m_httpservice_params.bSSH = FALSE;
 
     m_hProxyHttpService = Create_ProxyHttpService(&m_httpservice_params);
