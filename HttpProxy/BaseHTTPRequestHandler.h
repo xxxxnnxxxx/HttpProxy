@@ -37,10 +37,6 @@ private:
     void reset();   //重置，在不完全的接收到所有数据，都需要重置
 
 private:
-    //特定功能函数
-    void headerfilterforAgent(HttpHeaders*pHttpHeaders);  //根据代理服务器的需要过滤指定的头
-
-private:
     HttpHeaders             http_items;
     HttpContent             httpcontent;
     HttpRequest             httprequest;
