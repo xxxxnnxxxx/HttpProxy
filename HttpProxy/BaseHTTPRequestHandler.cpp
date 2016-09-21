@@ -95,7 +95,7 @@ void BaseHTTPRequestHandler::do_GET()
     size_t result_size = 0;
 
 
-    Parser::HttpHeadersParser(&http_items);
+    Parser::RequestHttpHeadersParser(&http_items);  //处理请求的相关http头信息
     
     if (m_pHttpService_Params->bSSH) {
         ret = httprequest.https_request(&http_items, &httpcontent, &response_httpheaders, &response_httpcontent);
@@ -113,7 +113,7 @@ void BaseHTTPRequestHandler::do_GET()
     }
  
 
-    do {
+    do {//返回处理顺序应当可以优化
         if (ret == HttpRequest::CURLE_OK)
         {
             if (response_httpheaders.m_response_status == 400) {
@@ -130,7 +130,7 @@ void BaseHTTPRequestHandler::do_GET()
             result_phttpheaders = response_httpheaders.getbuffer(&len_httpheaders);
 
 
-            Parser::HttpHeadersParser(&response_httpheaders);
+            Parser::ResponseHttpHeadersParser(&response_httpheaders);   //处理返回的相关http头信息
             
             result_size = len_httpheaders + len_httpcontent + strlen(response_httpheaders.m_version) + 50;
             result = (char*)::malloc(result_size);

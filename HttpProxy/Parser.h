@@ -6,7 +6,8 @@
 class Parser
 {
 public:
-    static void HttpHeadersParser(HttpHeaders *headers);
+    static void RequestHttpHeadersParser(HttpHeaders *headers);
+    static void ResponseHttpHeadersParser(HttpHeaders *headers);
 };
 
 
