@@ -33,7 +33,7 @@ private:
 private:
     void invokeMethod(const char *methdo);
     void invokeRequestCallback(HttpHeaders *http_headers);
-    void invokeResponseCallback(char *buf,size_t len);
+    void invokeResponseCallback(char **buf, size_t *plen);
     void reset();   //重置，在不完全的接收到所有数据，都需要重置
 
 private:

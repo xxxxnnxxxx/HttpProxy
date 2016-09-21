@@ -144,9 +144,11 @@ void BaseHTTPRequestHandler::do_GET()
 
 
             //处理返回回调
-            invokeResponseCallback(result,len_title + len_httpheaders + len_httpcontent);
+            result_size = len_title + len_httpheaders + len_httpcontent;
 
-            m_pBaseSockeStream->write(result, len_title + len_httpheaders + len_httpcontent);
+            invokeResponseCallback(&result,&result_size);
+
+            m_pBaseSockeStream->write(result, result_size);
 
         }
 
@@ -322,8 +324,6 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
                             ret->dwOpt = RET_SEND; 
                         }
                         else {
-                           // invokeRequestCallback(&http_items);
-                           // invokeMethod(http_items.m_method);
                             reset();
                             ret->dwOpt = RET_RECV;
                         }
@@ -354,7 +354,6 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
         RELEASE_RECVBUF()
         ret->dwOpt = RET_SEND;
     }
-
 
     return;
 }
@@ -419,18 +418,32 @@ void BaseHTTPRequestHandler::invokeRequestCallback(HttpHeaders *http_headers)
 /*
 请求返回后，调用回调函数
 */
-void BaseHTTPRequestHandler::invokeResponseCallback(char *buf,size_t len)
+void BaseHTTPRequestHandler::invokeResponseCallback(char **buf, size_t *plen)
 {
     CALLBACK_DATA callback_data;
-    if(buf == NULL || len == 0)
+    if(*buf == NULL || *plen == 0)
         return;
 
     memset(&callback_data, 0, sizeof(CALLBACK_DATA));
-    callback_data.buf=(char*)malloc(len);
-    memset(callback_data.buf,0,len);
-    memcpy_s(callback_data.buf,len,buf,len);
+    callback_data.buf = (char*)malloc(*plen);
+    memset(callback_data.buf, 0, *plen);
+
+    memcpy_s(callback_data.buf, *plen, *buf, *plen);
+    callback_data.len = *plen;
+    
 
     m_pHttpService_Params->response_callback(&callback_data);
+
+    if(*buf != NULL){
+        free(*buf);
+        *buf = NULL;
+    }
+
+    *buf = (char*) malloc(callback_data.len);
+    memset(*buf, 0, callback_data.len);
+    memcpy_s(*buf, callback_data.len, callback_data.buf, callback_data.len);
+
+    *plen = callback_data.len;
 
     //处理完之后，清理掉内存
     if (callback_data.buf != NULL) {
