@@ -130,7 +130,7 @@ void BaseHTTPRequestHandler::do_GET()
             result_phttpheaders = response_httpheaders.getbuffer(&len_httpheaders);
 
 
-            Parser::ResponseHttpHeadersParser(&response_httpheaders);   //处理返回的相关http头信息
+            Parser::ResponseHttpHeadersParser(&response_httpheaders, &http_items);   //处理返回的相关http头信息
             
             result_size = len_httpheaders + len_httpcontent + strlen(response_httpheaders.m_version) + 50;
             result = (char*)::malloc(result_size);
