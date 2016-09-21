@@ -94,19 +94,9 @@ void BaseHTTPRequestHandler::do_GET()
     size_t len_httpcontent = 0;
     char classname[256] = { 0 };
 
-    //对HTTP/1.1以前版本的Proxy-Connection的过滤
-    /*char *pProxy_Connection = http_items["Proxy-Connection"];
-    if (pProxy_Connection != NULL) {
-        http_items.del(pProxy_Connection);
-        
-        char *pConnection = http_items["Connection"];
-        if (pConnection == NULL) {
-            http_items.insert("Connection", "Keep-Alive");
-        }
-    }*/
-    headerfilterforAgent(&http_items); //清空指定的字段，防止哑代理
+    //headerfilterforAgent(&http_items); //清空指定的字段，防止哑代理
 
-    //根据http/https的不同调用不同的方法
+    
     if (m_pHttpService_Params->bSSH) {
         ret = httprequest.https_request(&http_items, &httpcontent, &response_httpheaders, &response_httpcontent);
     }
@@ -165,21 +155,6 @@ void BaseHTTPRequestHandler::do_GET()
             invokeResponseCallback(result,len_title + len_httpheaders + len_httpcontent);
 
             m_pBaseSockeStream->write(result, len_title + len_httpheaders + len_httpcontent);
-            
-
-            //获取连接状态
-            /*char stralive[255] = { 0 };
-            char *palive = NULL;
-            if ((palive = (response_httpheaders["Connection"])) != NULL) {
-
-                strcpy_s(stralive, 255, palive);
-                CommonFuncs::trim(stralive, 255);
-                if (_stricmp(stralive, "close") == 0) {
-                    m_pHttpSession->m_bKeepAlive = FALSE;
-                }
-            }
-            else
-                m_pHttpSession->m_bKeepAlive = TRUE;*/
 
         }
 

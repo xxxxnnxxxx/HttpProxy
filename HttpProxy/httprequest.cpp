@@ -119,11 +119,6 @@ int HttpRequest::http_request(HttpHeaders *request_headers,
                 memcpy_s(buf + Len_key + 1, Len_val + 1, val, Len_val);
 
                 chunk = curl_slist_append(chunk, buf);
-
-                /*if (buf != NULL) {
-                    free(buf);
-                    buf = NULL;
-                }*/
             }
         }
 
