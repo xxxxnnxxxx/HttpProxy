@@ -32,3 +32,4 @@
 *.7z
 
 /Cert_PriKey/
+/test_crypt/
