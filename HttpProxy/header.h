@@ -19,6 +19,8 @@
 #endif
 
 
+//custom http tag
+#define CHT_HTTPREQUESTURI  "HttpRequestUri"
 
 
 //CALLBACK_DATA_TYPE
@@ -74,7 +76,7 @@ typedef struct _HTTPSERVICE_PARAMS_ {
     DWORD numofworkthread;  //服务器工作线程数，默认为处理器核心数量
     _Request_Callback_  request_callback;
     _Response_Callback_ response_callback;
-    _ServerStatus_Callback_ serverstatus_callback;
+    _ServerStatus_Callback_ serverstatus_callback; //暂时没有使用
 }HTTPSERVICE_PARAMS, *PHTTPSERVICE_PARAMS;
 
 
