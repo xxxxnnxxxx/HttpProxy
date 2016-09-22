@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include "headers.h"
 #include "Parser.h"
 
 
@@ -14,13 +15,13 @@ void Parser::RequestHttpHeadersParser(HttpHeaders *headers)
     }
 }
 
-void Parser::ResponseHttpHeadersParser(HttpHeaders *response_headers, const HttpHeaders* request_headers)
+void Parser::ResponseHttpHeadersParser(HttpHeaders *response_headers, HttpHeaders* request_headers)
 {
     char *list[] = { "Proxy-Connection", "proxy-authenticate", "proxy-authorization", "Strict-Transport-Security",NULL };
     int i = 0;
     char *p = NULL;
     char *request_uri = NULL;
-    long len_uri = NULL;
+    size_t len_uri = 0;
 
     for (;; i++) {
         p = list[i];
@@ -32,11 +33,11 @@ void Parser::ResponseHttpHeadersParser(HttpHeaders *response_headers, const Http
     len_uri = request_headers->get_request_uri(NULL, 0);
     
     if( len_uri != 0 ){
-        request_headers = (char*)malloc(len_uri + 1);
-        memset(request_headers, 0, len_uri + 1);
+        request_uri = (char*)malloc(len_uri + 1);
+        memset(request_uri, 0, len_uri + 1);
         request_headers->get_request_uri(request_uri, len_uri);
 
-        response_headers->insert("HttpProxyUri", request_uri);
+        response_headers->insert(CHT_HTTPREQUESTURI, request_uri);
 
         if( request_uri != NULL ){
             free(request_uri);

@@ -121,16 +121,12 @@ void BaseHTTPRequestHandler::do_GET()
                 m_pHttpSession->m_bKeepAlive = FALSE;
                 break;
             }
-
             m_pHttpSession->m_resultstate = HttpSession::HS_RESULT_OK;
-
-            
+            Parser::ResponseHttpHeadersParser(&response_httpheaders, &http_items);   //处理返回的相关http头信息          
 
             result_phttpcontent = response_httpcontent.getbuffer(&len_httpcontent);
             result_phttpheaders = response_httpheaders.getbuffer(&len_httpheaders);
 
-
-            Parser::ResponseHttpHeadersParser(&response_httpheaders, &http_items);   //处理返回的相关http头信息
             
             result_size = len_httpheaders + len_httpcontent + strlen(response_httpheaders.m_version) + 50;
             result = (char*)::malloc(result_size);
