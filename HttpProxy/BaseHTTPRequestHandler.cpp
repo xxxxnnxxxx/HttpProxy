@@ -309,6 +309,9 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
 
                 if (http_items.parse_httpheaders((const char*)m_precv_buf, m_len_recvbuf, HttpHeaders::HTTP_REQUEST)) {
 
+                    //////////////////////////////////////////////////////////////////////////
+                    //注意 这地方获取数据长度必须处理容错
+
                     if ((pContent_Length = http_items["Content-Length"]) != NULL) {
                         //发现长度
                         Content_Length = strtol(pContent_Length, NULL, 10);
