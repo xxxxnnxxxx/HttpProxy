@@ -230,22 +230,13 @@ void BaseHTTPRequestHandler::connect_intercept()
         delete m_pBaseSockeStream;
     }
 
-    //处理接收到的数据
-#if 0
-    if (_stricmp(http_items.m_version, HTTP_1_1) == 0) {
-        m_port = http_items.m_port; //保存主机端口号
+
+    pUrl = http_items.m_uri;
+       
+    if( *pUrl == '/'){
+        m_port = HttpHeaders::HTTPS_DEFALUT_PORT;
     }
-    else {
-#endif
-
-        //在中间人代理的情况下，直接使用默认的443端口
-
-   pUrl = http_items.m_uri;
-   
-   if( *pUrl == '/'){
-       m_port = HttpHeaders::HTTPS_DEFALUT_PORT;
-   }
-   else{
+    else{
        while (*pUrl != '\0') {
            if (*pUrl == ':') {
                bFind_Colon = TRUE;
@@ -257,17 +248,11 @@ void BaseHTTPRequestHandler::connect_intercept()
        if (bFind_Colon) {
            if (*(pUrl + 1) != '\0') {
                pUrl++;
-
                m_port = (WORD)strtol(pUrl, NULL, 10);
            }
        }
-   }
-   
-    
-
-#if 0        
     }
-#endif
+   
 
     SSLSocketStream::_init_syn();
     //
