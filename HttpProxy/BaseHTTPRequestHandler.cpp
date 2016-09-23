@@ -227,10 +227,12 @@ void BaseHTTPRequestHandler::connect_intercept()
     }
 
     //处理接收到的数据
+#if 0
     if (_stricmp(http_items.m_version, HTTP_1_1) == 0) {
         m_port = http_items.m_port; //保存主机端口号
     }
     else {
+#endif
         BOOL bFind_Colon = FALSE;
         char *pPort = http_items.m_uri;
         while (*pPort != '\0') {
@@ -249,8 +251,9 @@ void BaseHTTPRequestHandler::connect_intercept()
             }
         }
 
-        
+#if 0        
     }
+#endif
 
     SSLSocketStream::_init_syn();
     //
