@@ -222,6 +222,10 @@ void BaseHTTPRequestHandler::do_CONNECT()
 
 void BaseHTTPRequestHandler::connect_intercept()
 {
+    BOOL bFind_Colon = FALSE;
+    char *pUrl = NULL; 
+
+
     if (m_pBaseSockeStream != NULL) {
         delete m_pBaseSockeStream;
     }
@@ -233,23 +237,33 @@ void BaseHTTPRequestHandler::connect_intercept()
     }
     else {
 #endif
-        BOOL bFind_Colon = FALSE;
-        char *pPort = http_items.m_uri;
-        while (*pPort != '\0') {
-            if (*pPort == ':') {
-                bFind_Colon = TRUE;
-                break;
-            }
-            pPort++;
-        }
 
-        if (bFind_Colon) {
-            if (*(pPort + 1) != '\0') {
-                pPort++;
+        //在中间人代理的情况下，直接使用默认的443端口
 
-                m_port = (WORD)strtol(pPort, NULL, 10);
-            }
-        }
+   pUrl = http_items.m_uri;
+   
+   if( *pUrl == '/'){
+       m_port = HttpHeaders::HTTPS_DEFALUT_PORT;
+   }
+   else{
+       while (*pUrl != '\0') {
+           if (*pUrl == ':') {
+               bFind_Colon = TRUE;
+               break;
+           }
+           pUrl++;
+       }
+
+       if (bFind_Colon) {
+           if (*(pUrl + 1) != '\0') {
+               pUrl++;
+
+               m_port = (WORD)strtol(pUrl, NULL, 10);
+           }
+       }
+   }
+   
+    
 
 #if 0        
     }

@@ -381,7 +381,7 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
             break;
     }
 
-
+    /*暂时处理的是1.1协议的内容，可以通过host属性得到端口号*/
     char*pHost = (*this)["HOST"];
     m_host = NULL;
     size_t len_host = 0;
