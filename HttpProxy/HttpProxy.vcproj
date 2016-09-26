@@ -42,7 +42,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D _WINSOCK_DEPRECATED_NO_WARNINGS  /DCURL_STATICLIB /D_STATIC "
+				AdditionalOptions="/D _WINSOCK_DEPRECATED_NO_WARNINGS  /DCURL_STATICLIB /D_STATIC /DLUA_EXT"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\include;..\include\openssl-win32\include\;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB"

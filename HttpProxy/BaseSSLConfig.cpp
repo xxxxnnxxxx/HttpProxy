@@ -110,7 +110,7 @@ BOOL BaseSSLConfig::TrustRootCert()
             if(pkcs12 == NULL){
                 return FALSE;
             }
-            return CertificateProvider::addCert2WindowsAuth(m_rootcert, "ROOT");
+            return CertificateProvider::addCert2WindowsAuth_ROOT(m_rootcert);
         }
        
     }

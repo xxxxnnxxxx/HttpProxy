@@ -30,9 +30,9 @@ public:
     static int          exportPriKey(EVP_PKEY *pKey,unsigned char *buf, int len);/*正确返回私钥长度*/
     static void*        importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len);/*正确返回非NULL*/
     static int          savePriKeytofile(EVP_PKEY *pkey, char*path);/*正确返回私钥长度*/
-    static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const char* pos);/*正确返回非0*/
-    static int          addCert2WindowsAuth(X509* x509, const char *pos);  
-    static int          addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, char* password);
+    //static int          addCert2WindowsAuth(unsigned char *buf_x509_der, int len_x509_der, const wchar_t* pos);/*正确返回非0*/
+    static int          addCert2WindowsAuth_ROOT(X509* x509);  
+    static int          addCert2WindowsAuth_MY(PKCS12*pkcs12, char* password);
     static int          exportx509(X509* x509, unsigned char* buf, int len);/*返回证书长度*/
     static void*        importx509(X509**pX509, unsigned char* buf, int len);
     static int          x509_certify(X509*x,X509*xca, EVP_PKEY*pkey_ca); /*CA签名*/

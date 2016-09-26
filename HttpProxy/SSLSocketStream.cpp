@@ -279,7 +279,7 @@ void SSLSocketStream::init_keycert(void*buf,int len)
                 m_x509 = CertificateProvider::generate_certificate(m_keypair, purl, purl, purl);
                 g_BaseSSLConfig->CA(m_x509);
                 pkcs12 = CertificateProvider::x509topkcs12(m_x509, m_keypair, PASSWORD, purl, g_BaseSSLConfig->rootcert());
-                CertificateProvider::addCert2WindowsAuth(pkcs12,"MY",PASSWORD);
+                CertificateProvider::addCert2WindowsAuth_MY(pkcs12, PASSWORD);
                 
             }
             else{
@@ -295,7 +295,7 @@ void SSLSocketStream::init_keycert(void*buf,int len)
         m_x509 = CertificateProvider::generate_certificate(m_keypair,purl, purl, purl, CertificateProvider::DEF_DAYS);
         ret = g_BaseSSLConfig->CA(m_x509);
         pkcs12 = CertificateProvider::x509topkcs12(m_x509,m_keypair,PASSWORD,NULL,NULL);
-        CertificateProvider::addCert2WindowsAuth(pkcs12, "MY", PASSWORD);
+        CertificateProvider::addCert2WindowsAuth_MY(pkcs12, PASSWORD);
     }
 
     if(purl != NULL) free(purl);
