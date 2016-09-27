@@ -34,6 +34,15 @@ typedef struct _CALLBACK_DATA_ {
     DWORD   len;
 }CALLBACK_DATA,*PCALLBACK_DATA;
 
+
+typedef struct _CBD_REQUEST_ {
+    ULONG  protocl;
+    WORD   version;
+    char*  url;
+    DWORD  len_url;
+
+}CBD_REQUEST,*PCBD_REQUEST;
+
 #define SCT_NORMAL      0x00000000  //不执行任何操作
 #define SCT_PAUSE       0x00000001  //暂停服务
 #define SCT_CONTINUE    0x00000002  //继续
