@@ -309,16 +309,12 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
 
                 if (http_items.parse_httpheaders((const char*)m_precv_buf, m_len_recvbuf, HttpHeaders::HTTP_REQUEST)) {
 
-                    //////////////////////////////////////////////////////////////////////////
-                    //注意 这地方获取数据长度必须处理容错
-
                     if ((pContent_Length = http_items["Content-Length"]) != NULL) {
                         //发现长度
                         Content_Length = strtol(pContent_Length, NULL, 10);
                         if (headersize + Content_Length <= m_len_recvbuf) {//说明已经接收完全部数据
-                         //初始化接收到的数据内容
                             httpcontent.insert(m_precv_buf + headersize, Content_Length);
-                            invokeRequestCallback(&http_items);
+                            //invokeRequestCallback(&http_items);
                             invokeMethod(http_items.m_method);
                             reset();
                             RELEASE_RECVBUF()
@@ -330,7 +326,7 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
                         }
                     }
                     else {
-                        invokeRequestCallback(&http_items);
+                        //invokeRequestCallback(&http_items);
                         invokeMethod(http_items.m_method);
                         reset(); 
                         RELEASE_RECVBUF()
@@ -338,7 +334,7 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
                     }
                 }//if (http_items.parse_httpheaders((const char*)m_precv_b........
                 else {
-                    reset();                //清理用不到的内存
+                    reset(); 
                     RELEASE_RECVBUF()
                     ret->dwOpt = RET_RECV;
                 }
@@ -380,6 +376,9 @@ size_t BaseHTTPRequestHandler::find_httpheader(const char* buf, size_t bufsize) 
 分配调用对应的处理器方法
 */
 void BaseHTTPRequestHandler::invokeMethod(const char * method) {
+
+    invokeRequestCallback(&http_items);
+
     if (_stricmp(method, "CONNECT") == 0) {
         do_CONNECT();
     }
