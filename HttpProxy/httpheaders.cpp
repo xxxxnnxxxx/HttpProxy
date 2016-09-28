@@ -240,10 +240,6 @@ void HttpHeaders::insert(const char *key, size_t len_key, const char *val, size_
     //插入到列表中
     InsertTailList(&m_ListHeader, (PLIST_ENTRY)&pKeyVal->list_entry);
 
-
-    //计算buf长度
-  //  m_length += len_key;
-  //  m_length += len_val;
     //计数加一
     m_count++;
 }
@@ -393,6 +389,7 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
 
         char*pPort = strstr(pHost, ":");
         if (pPort != NULL) {
+
             char *endptr = NULL;
             m_port = (WORD)strtol(pPort + 1, &endptr, 10);
             memcpy_s(m_host, len_host, pHost, pPort - pHost);
