@@ -197,39 +197,11 @@ BOOL g_bFind360COM = FALSE;
 void __stdcall Request_Callback(PCALLBACK_DATA pcallback_data)
 {
     theHPSDialog->insert_reqlist(pcallback_data->buf,pcallback_data->len);
-    
-    char * pFind = StrStrIA(pcallback_data->buf,"www.360.com");
-    if(pFind != NULL)
-    {
-        g_bFind360COM = TRUE;
-    }
 }
 
 
 void __stdcall Response_Callback(PCALLBACK_DATA pcallback_data)
 {
-    char * relocation = "HTTP/1.1 301 Moved Permanently\r\n"
-                        "Location: http://www.qq.com/\r\n\r\n";
-
-    if( g_bFind360COM ){
-
-
-
-        if(pcallback_data->buf != NULL){
-
-            free(pcallback_data->buf);
-            pcallback_data->buf = NULL;
-        }
-
-        pcallback_data->buf = (char*) malloc(strlen(relocation));
-        memset(pcallback_data->buf, 0, strlen(relocation));
-
-        memcpy_s(pcallback_data->buf, strlen(relocation), relocation, strlen(relocation));
-        pcallback_data->len = strlen(relocation);    
-    
-        g_bFind360COM = FALSE;
-    }
-
 
 }
 
