@@ -70,6 +70,76 @@ void GenRCConfHeader(const char* file,const char * content, size_t len)
     if( fp != NULL) fclose( fp );
 }
 
+
+#define CA_TEST 1
+
+/*CA测试签名*/
+#if CA_TEST
+void ca_test()
+{
+
+    EVP_PKEY *pKey_root = NULL;
+    X509 * x509_root = NULL;
+
+    EVP_PKEY *pKey = NULL;
+    X509 * x509 = NULL;
+
+    int ret = 0;
+
+    pKey_root = CertificateProvider::generate_keypair(2048);
+
+    if (pKey_root == NULL)
+        return ;
+
+    x509_root = CertificateProvider::generate_certificate(pKey, "xxxxnnxxxx@126.com", "xxxxnnxxxx@126.com", "xxxxnnxxxx@126.com",1000);
+
+    if (x509_root == NULL)
+    {
+        EVP_PKEY_free(pKey_root);
+        pKey_root=NULL;
+        return ;
+    }
+
+    //
+
+    pKey = CertificateProvider::generate_keypair(2048);
+
+    if (pKey == NULL)
+        return ;
+
+    x509 = CertificateProvider::generate_certificate(pKey, "www.baidu.com", "www.baidu.com", "www.baidu.com",1000);
+
+    if (x509 == NULL)
+    {
+        EVP_PKEY_free(pKey);
+        pKey=NULL;
+        EVP_PKEY_free(pKey_root);
+        pKey_root=NULL;
+        return ;
+    }
+
+    //签名
+    ret = CertificateProvider::x509_certify(x509, x509_root, pKey_root);
+
+    if(ret){//success
+        int len = 0;
+        unsigned char * buf = NULL;
+        len = CertificateProvider::exportx509(x509, NULL, 0);
+        if(len){
+            buf = (unsigned char*)malloc(len);
+            memset(buf, 0, len);
+            len = CertificateProvider::exportx509(x509, buf, len);
+            if(len){
+                //可以导出文件
+            
+            }
+        }
+    
+    }
+    
+}
+#endif
+
 int main(int argc, char **argv)
 {
     char szPriKeyPath[MAX_PATH] = {0};
@@ -94,11 +164,14 @@ int main(int argc, char **argv)
             {"outputdir", required_argument, 0,  0 },
             {"issuer",  required_argument, 0,  0 },
             {"password", required_argument, 0, 0},
+#if CA_TEST
+            {"casign",  required_argument, 0, 0},/*测试签名*/
+#endif
             {0,         0,                 0,  0 }
         };
 
 
-        c = getopt_long(argc, argv, "o:i:p:",
+        c = getopt_long(argc, argv, "o:i:p:c",
             long_options, &option_index);
         if (c == -1)
             break;
@@ -129,6 +202,13 @@ int main(int argc, char **argv)
                 }
             }
             break;
+#if CA_TEST
+        case 'c':
+            {
+                ca_test();
+            }
+            break;
+#endif
         }
     
     }
