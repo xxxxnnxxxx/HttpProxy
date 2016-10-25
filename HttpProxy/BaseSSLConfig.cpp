@@ -3,6 +3,7 @@
 #include "BaseSSLConfig.h"
 #include "RootCert_PriKey/PriKey.h"
 #include "RootCert_PriKey/RootCert.h"
+#include "RootCert_PriKey/RootCertConfig.h"
 
 //初始化SSL
 typedef CRITICAL_SECTION	ssl_lock;
@@ -99,17 +100,17 @@ BOOL BaseSSLConfig::TrustRootCert()
     if (m_status == BaseSSLConfig::STATUS_INITFINAL) {
 
         //判断是否存在证书
-        ret = CertificateProvider::is_certexist(m_rootcert, "ROOT", L"123456");
+        ret = CertificateProvider::is_certexist(m_rootcert, "ROOT", PASSWORD);
 
         if(ret){
 
         }
         else{
-            pkcs12 = CertificateProvider::x509topkcs12(m_rootcert, m_rootkeypair, "123456", NULL, NULL);
+            pkcs12 = CertificateProvider::x509topkcs12(m_rootcert, m_rootkeypair, PASSWORD, NULL, NULL);
             if(pkcs12 == NULL){
                 return FALSE;
             }
-            return CertificateProvider::addCert2WindowsAuth(m_rootcert, "ROOT");
+            return CertificateProvider::addCert2WindowsAuth_ROOT(m_rootcert);
         }
        
     }

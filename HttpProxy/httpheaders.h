@@ -44,8 +44,9 @@ public:
     int  parse_response_line(char *rl, int len);
     size_t  get_request_uri(char *buf, size_t len);   //获取请求的整个uri,对于https的形式，一般会包括host属性
     int  set_request_uri(char *buf, size_t len);      //设置主机的uri,主要是请求首行的,如果针对了host的修改，则会修改host属性
+    size_t length();    //获取头的长度，不包括content内容部分
 private:
-    int m_count;                //保存的key_val的数组长度
+    int m_count;                //属性个数
     LIST_ENTRY m_ListHeader;
 public:
     static WORD HTTP_DEFAULT_PORT;
@@ -56,7 +57,6 @@ public:
     char m_method[10];          //http方法
     char *m_uri;                //请求的uri
     char *m_host;               //保存host地址
-    size_t m_length;            //length of httpheaders
     WORD m_port;
 };
 #endif

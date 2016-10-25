@@ -28,21 +28,17 @@ int __stdcall CommonFuncs::trim(char *str, size_t len)
 
     char *end;
 
-    // Trim leading space
     while (isspace(*str)) str++;
 
-    // All spaces?
     if (*str == 0) {
         return 0;
     }
         
 
 
-    // Trim trailing space
     end = str + strlen(str) - 1;
     while (end > str && isspace(*end)) end--;
 
-    // Write new null terminator
     *(end + 1) = 0;
 
     buf = (char*)malloc(len);
@@ -74,9 +70,9 @@ char * __stdcall CommonFuncs::_realloc(char ** buf, size_t len,size_t relen)
 
     memset(result, 0, relen);
 
-    if (len > 0 && *buf!=NULL) {//分配注意内存
+    if (len > 0 && *buf != NULL) {
         memcpy_s(result, relen, *buf, len);
-        free(*buf);//释放原有的空间
+        free(*buf);
         *buf = NULL;
     }
     return result;

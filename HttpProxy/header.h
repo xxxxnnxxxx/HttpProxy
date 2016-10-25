@@ -19,6 +19,8 @@
 #endif
 
 
+//custom http tag
+#define CHT_HTTPREQUESTURI  "HttpRequestUri"
 
 
 //CALLBACK_DATA_TYPE
@@ -31,6 +33,15 @@ typedef struct _CALLBACK_DATA_ {
     char *  buf;
     DWORD   len;
 }CALLBACK_DATA,*PCALLBACK_DATA;
+
+
+typedef struct _CBD_REQUEST_ {
+    ULONG  protocl;
+    WORD   version;
+    char*  url;
+    DWORD  len_url;
+
+}CBD_REQUEST,*PCBD_REQUEST;
 
 #define SCT_NORMAL      0x00000000  //不执行任何操作
 #define SCT_PAUSE       0x00000001  //暂停服务
@@ -74,7 +85,7 @@ typedef struct _HTTPSERVICE_PARAMS_ {
     DWORD numofworkthread;  //服务器工作线程数，默认为处理器核心数量
     _Request_Callback_  request_callback;
     _Response_Callback_ response_callback;
-    _ServerStatus_Callback_ serverstatus_callback;
+    _ServerStatus_Callback_ serverstatus_callback; //暂时没有使用
 }HTTPSERVICE_PARAMS, *PHTTPSERVICE_PARAMS;
 
 

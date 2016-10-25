@@ -32,11 +32,8 @@ AcceptConnection::AcceptConnection(HANDLE hCompletionPort, SOCKET acp, sockaddr_
     m_httpservice_params.bSSH = FALSE;
     m_httpservice_params.port = 8206;
     strcpy_s(m_httpservice_params.ip, 16, "127.0.0.1");
-
     memcpy_s(&m_httpservice_params, sizeof(HTTPSERVICE_PARAMS), pHttpService_Params, sizeof(HTTPSERVICE_PARAMS));
 
-
-    
     //初始化处理
     Init_DataHandlerObj(); 
     InitializeCriticalSection(&m_lock);
@@ -129,11 +126,7 @@ int AcceptConnection::HandleIoCompletion(DWORD numberbytes, session_overlapped  
             m_wsabuf[SEND].len = 0;
             m_httpsession.revert();
             m_bytessend = 0;
-
-            if(m_httpsession.m_bKeepAlive==FALSE)
-                m_commstate = CLOSING;
-            else
-                m_commstate = RECVING;
+            m_commstate = RECVING;
         }      
     }
 

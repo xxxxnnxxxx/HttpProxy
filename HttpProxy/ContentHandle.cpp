@@ -7,7 +7,7 @@
 BOOL __stdcall ContentHandle::search_content(const char *sbuf, size_t bufsize, const char *reg, char **pFirstPos, size_t *offset)
 {
     pcre2_code *re;
-    PCRE2_SPTR pattern = (PCRE2_SPTR)reg;     /* PCRE2_SPTR is a pointer to unsigned code units of */
+    PCRE2_SPTR pattern = (PCRE2_SPTR)reg;
     size_t pos = 0;
     int errornumber;
     int rc;
@@ -29,13 +29,13 @@ BOOL __stdcall ContentHandle::search_content(const char *sbuf, size_t bufsize, c
 
     match_data = pcre2_match_data_create_from_pattern(re, NULL);
     rc = pcre2_match(
-        re,                   /* the compiled pattern */
-        (PCRE2_SPTR)sbuf,     /* the subject string */
-        subject_length,       /* the length of the subject */
-        0,                    /* start at offset 0 in the subject */
-        0,                    /* default options */
-        match_data,           /* block for storing the result */
-        NULL);                /* use default match context */
+        re, 
+        (PCRE2_SPTR)sbuf,
+        subject_length,
+        0,
+        0, 
+        match_data, 
+        NULL); 
 
     if (rc == PCRE2_ERROR_NOMATCH) {
         pcre2_match_data_free(match_data);

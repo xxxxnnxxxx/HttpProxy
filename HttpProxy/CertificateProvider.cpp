@@ -254,56 +254,67 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
 添加证书到系统指定的位置
 pos: "ROOT","MY","SPC","CA"
 */
-int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, 
-                                             int len_x509_der, 
-                                             const char *pos)
-{
-    int ret = 0;
-    int error = 0;
-    HCERTSTORE hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-    if (hRootCertStore != NULL)
-    {
-        //读取证书内容
-        if (CertAddEncodedCertificateToStore(hRootCertStore,
-            X509_ASN_ENCODING,
-            buf_x509_der, len_x509_der,
-            CERT_STORE_ADD_USE_EXISTING, NULL))
-        {
-#ifdef _DEBUG
-            printf("Successful\n");
-#endif
-            ret = 1;
-        }
-        else {
-#ifdef _DEBUG
-            error = GetLastError();
-            printf("CertAddEncodeCerificateToStore->GetLastError():%d", error);
-#endif
-        }
-        CertCloseStore(hRootCertStore, 0);
-    }
-
-    return ret;
-}
+//int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, 
+//                                             int len_x509_der, 
+//                                             const wchar_t *pos)
+//{
+//    int ret = 0;
+//    int error = 0;
+//    HCERTSTORE hRootCertStore;
+//    //hRootCertStore = CertOpenSystemStoreA(NULL, pos);
+//    hRootCertStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
+//                                    0, 
+//                                    0, 
+//                                    CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
+//                                    L"root");
+//    if (hRootCertStore != NULL)
+//    {
+//        //读取证书内容
+//        if (CertAddEncodedCertificateToStore(hRootCertStore,
+//            X509_ASN_ENCODING,
+//            buf_x509_der, len_x509_der,
+//            CERT_STORE_ADD_USE_EXISTING, NULL))
+//        {
+//#ifdef _DEBUG
+//            printf("Successful\n");
+//#endif
+//            ret = 1;
+//        }
+//        else {
+//#ifdef _DEBUG
+//            error = GetLastError();
+//            printf("CertAddEncodeCerificateToStore->GetLastError():%d", error);
+//#endif
+//        }
+//        CertCloseStore(hRootCertStore, 0);
+//    }
+//
+//    return ret;
+//}
 
 
 /*
 
 */
-int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
+int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509)
 {
     int len_x509 = 0;
     unsigned char * buf_x509 = NULL;
     int ret = 0;
     int error = 0;
+    HCERTSTORE hCertStore;
 
     len_x509 = i2d_X509(x509, &buf_x509);
     if (len_x509 > 0) {
-        HCERTSTORE hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-        if (hRootCertStore != NULL)
+        hCertStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
+                                        0, 
+                                        0, 
+                                        CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
+                                        L"Root");
+        if (hCertStore != NULL)
         {
             //读取证书内容
-            if (CertAddEncodedCertificateToStore(hRootCertStore,
+            if (CertAddEncodedCertificateToStore(hCertStore,
                 X509_ASN_ENCODING,
                 buf_x509, len_x509,
                 CERT_STORE_ADD_USE_EXISTING, NULL))
@@ -319,22 +330,22 @@ int CertificateProvider::addCert2WindowsAuth(X509* x509, const char *pos)
                 printf("CertAddEncodeCerificateToStore->GetLastError():%d", error);
 #endif
             }
-            CertCloseStore(hRootCertStore, 0);
+            CertCloseStore(hCertStore, 0);
         }
     }
 
     return ret;
 }
 
-int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, char* password)
+int CertificateProvider::addCert2WindowsAuth_MY(PKCS12*pkcs12, char* password)
 {
     int ret = 0;
     int len_pkcs12 = 0;
-    unsigned char* buf_pkcs12=NULL;
+    unsigned char* buf_pkcs12 = NULL;
     int error=0;
     CRYPT_DATA_BLOB cdb;
-    HCERTSTORE hImportCertStore=NULL;
-    HCERTSTORE hRootCertStore=NULL;
+    HCERTSTORE hImportCertStore = NULL;
+    HCERTSTORE hCertStore = NULL;
     wchar_t *pwspwd = NULL;
 
     CommonFuncs::a2w(password, &pwspwd);
@@ -347,7 +358,7 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, cha
 
         cdb.cbData=len_pkcs12;
         cdb.pbData=buf_pkcs12;
-        hImportCertStore=PFXImportCertStore(&cdb,pwspwd,CRYPT_EXPORTABLE);
+        hImportCertStore = PFXImportCertStore(&cdb,pwspwd,CRYPT_EXPORTABLE);
         
         //读取证书内容
         if(hImportCertStore)
@@ -357,12 +368,21 @@ int CertificateProvider::addCert2WindowsAuth(PKCS12*pkcs12, const char *pos, cha
 
             if(pCertContext!=NULL)
             {
-                hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-                ret = CertAddCertificateContextToStore(hRootCertStore, 
+               // hCertStore = CertOpenSystemStoreW(NULL, pos);
+                hCertStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
+                                            0, 
+                                            0, 
+                                            CERT_SYSTEM_STORE_CURRENT_USER,
+                                            L"My");
+                ret = CertAddCertificateContextToStore(hCertStore, 
                                                         pCertContext, 
                                                         CERT_STORE_ADD_REPLACE_EXISTING, 
                                                         NULL);
+                if( hCertStore != NULL) CertCloseStore(hCertStore, 0);
+                
             }
+
+            CertCloseStore(hImportCertStore, 0);
         }
         else
             error=GetLastError();
@@ -694,7 +714,7 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
 }
 
 //
-int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *pszpwd)
+int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszpwd)
 {
     int ret = 0;
     HANDLE          hStoreHandle;
@@ -705,14 +725,17 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
     X509 *pX09 = NULL;
     EVP_PKEY *pPriKey = NULL;
     X509 *ca = NULL;
+    wchar_t * pwszpwd = NULL;
 
 
     char pszNameString[256];
     char pszIssuerString[256];
 
     if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
-        printf("The store was not opened.");
+        return 0;
     }
+
+    CommonFuncs::a2w(pszpwd, &pwszpwd);
 
     while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
         if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
@@ -726,19 +749,17 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
         memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
         fpx.pbData=NULL;
 
-        bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+        bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pwszpwd,NULL,EXPORT_PRIVATE_KEYS);
         if(bRet){
             fpx.pbData=(unsigned char*)malloc(fpx.cbData);
-            bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pszpwd,NULL,EXPORT_PRIVATE_KEYS);
+            bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pwszpwd,NULL,EXPORT_PRIVATE_KEYS);
             if(bRet)
             {
-                char *ptmp = NULL;
                 int tmplen = 0;
                 BIO* bio = BIO_new_mem_buf(fpx.pbData,fpx.cbData);
                 pkcs12 = d2i_PKCS12_bio(bio,&pkcs12);
                 BIO_free(bio);
-                tmplen = CommonFuncs::w2a(pszpwd,&ptmp);
-                if(pkcs12_getx509(pkcs12, ptmp, tmplen, &pX09, &pPriKey,&ca))
+                if(pkcs12_getx509(pkcs12, pszpwd, tmplen, &pX09, &pPriKey,&ca))
                 {
                     if(pX09 != NULL) {
                         EVP_PKEY * pubkey = X509_get_pubkey(x509);
@@ -748,7 +769,6 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
 
                 }
 
-                if(ptmp != NULL) free(ptmp);
                 OPENSSL_free(pX09);
                 EVP_PKEY_free(pPriKey);
             }
@@ -764,6 +784,10 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, wchar_t *p
 
     } // end while
 
+    if( pwszpwd != NULL){
+        free(pwszpwd);
+        pwszpwd = NULL;
+    }
     CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
 

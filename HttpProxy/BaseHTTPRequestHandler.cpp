@@ -6,6 +6,7 @@
 #include "CommonFuncs.h"
 #include "ContentHandle.h"
 #include "BaseSSLConfig.h"
+#include "Parser.h"
 #include "BaseHTTPRequestHandler.h"
 
 extern BaseSSLConfig* g_BaseSSLConfig;
@@ -86,26 +87,16 @@ void BaseHTTPRequestHandler::do_GET()
     char *result = NULL;
     HttpHeaders response_httpheaders;
     HttpContent response_httpcontent;
-
     char *result_phttpheaders = NULL;
     char *result_phttpcontent = NULL;
-
     size_t len_httpheaders = 0;
     size_t len_httpcontent = 0;
     char classname[256] = { 0 };
+    size_t result_size = 0;
 
-    //对HTTP/1.1以前版本的Proxy-Connection的过滤
-    char *pProxy_Connection = http_items["Proxy-Connection"];
-    if (pProxy_Connection != NULL) {
-        http_items.del(pProxy_Connection);
-        
-        char *pConnection = http_items["Connection"];
-        if (pConnection == NULL) {
-            http_items.insert("Connection", "Keep-Alive");
-        }
-    }
 
-    //根据http/https的不同调用不同的方法
+    Parser::RequestHttpHeadersParser(&http_items);  //处理请求的相关http头信息
+    
     if (m_pHttpService_Params->bSSH) {
         ret = httprequest.https_request(&http_items, &httpcontent, &response_httpheaders, &response_httpcontent);
     }
@@ -120,14 +111,9 @@ void BaseHTTPRequestHandler::do_GET()
         }
 
     }
-    // 状态过滤
-    /////////////////////////////////////////////////////////////////
-    /*
-    需要对当前的返回状态进行过滤，如果发现400或其他的错误请求的情况下，直接关掉连接
-    不能产生返回数据
-    */
+ 
 
-    do {
+    do {//返回处理顺序应当可以优化
         if (ret == HttpRequest::CURLE_OK)
         {
             if (response_httpheaders.m_response_status == 400) {
@@ -135,50 +121,30 @@ void BaseHTTPRequestHandler::do_GET()
                 m_pHttpSession->m_bKeepAlive = FALSE;
                 break;
             }
-            //??????????????
             m_pHttpSession->m_resultstate = HttpSession::HS_RESULT_OK;
-
-            //过滤返回的头，去掉HTTP严格传输安全协议
-            headerfilterforAgent(&response_httpheaders);
+            Parser::ResponseHttpHeadersParser(&response_httpheaders, &http_items);   //处理返回的相关http头信息          
 
             result_phttpcontent = response_httpcontent.getbuffer(&len_httpcontent);
             result_phttpheaders = response_httpheaders.getbuffer(&len_httpheaders);
 
-            //下面把得到的数据根据SocketStream写入流中
-            size_t result_size = 0;
+            
             result_size = len_httpheaders + len_httpcontent + strlen(response_httpheaders.m_version) + 50;
             result = (char*)::malloc(result_size);
             memset(result, 0, result_size);
-            //计算得出返回的头的首部
             char *descript = HttpHeaders::get_status_code_descript(response_httpheaders.m_response_status);
-
             wsprintfA(result, "%s %d %s\r\n", response_httpheaders.m_version, response_httpheaders.m_response_status, descript);
-            //
             size_t len_title = strlen(result);
-
             memcpy_s(result + len_title, result_size - len_title, result_phttpheaders, len_httpheaders);
             memcpy_s(result + len_httpheaders + len_title, result_size - len_title - len_httpheaders, result_phttpcontent, len_httpcontent);
 
 
+
             //处理返回回调
-            invokeResponseCallback(result,len_title + len_httpheaders + len_httpcontent);
+            result_size = len_title + len_httpheaders + len_httpcontent;
 
-            m_pBaseSockeStream->write(result, len_title + len_httpheaders + len_httpcontent);
-            
+            invokeResponseCallback(&result,&result_size);
 
-            //获取连接状态
-            char stralive[255] = { 0 };
-            char *palive = NULL;
-            if ((palive = (response_httpheaders["Connection"])) != NULL) {
-
-                strcpy_s(stralive, 255, palive);
-                CommonFuncs::trim(stralive, 255);
-                if (_stricmp(stralive, "close") == 0) {
-                    m_pHttpSession->m_bKeepAlive = FALSE;
-                }
-            }
-            else
-                m_pHttpSession->m_bKeepAlive = TRUE;
+            m_pBaseSockeStream->write(result, result_size);
 
         }
 
@@ -256,35 +222,37 @@ void BaseHTTPRequestHandler::do_CONNECT()
 
 void BaseHTTPRequestHandler::connect_intercept()
 {
+    BOOL bFind_Colon = FALSE;
+    char *pUrl = NULL; 
+
+
     if (m_pBaseSockeStream != NULL) {
         delete m_pBaseSockeStream;
     }
 
-    //处理接收到的数据
-    if (_stricmp(http_items.m_version, HTTP_1_1) == 0) {
-        m_port = http_items.m_port; //保存主机端口号
+
+    pUrl = http_items.m_uri;
+       
+    if( *pUrl == '/'){
+        m_port = HttpHeaders::HTTPS_DEFALUT_PORT;
     }
-    else {
-        BOOL bFind_Colon = FALSE;
-        char *pPort = http_items.m_uri;
-        while (*pPort != '\0') {
-            if (*pPort == ':') {
-                bFind_Colon = TRUE;
-                break;
-            }
-            pPort++;
-        }
+    else{
+       while (*pUrl != '\0') {
+           if (*pUrl == ':') {
+               bFind_Colon = TRUE;
+               break;
+           }
+           pUrl++;
+       }
 
-        if (bFind_Colon) {
-            if (*(pPort + 1) != '\0') {
-                pPort++;
-
-                m_port = (WORD)strtol(pPort, NULL, 10);
-            }
-        }
-
-        
+       if (bFind_Colon) {
+           if (*(pUrl + 1) != '\0') {
+               pUrl++;
+               m_port = (WORD)strtol(pUrl, NULL, 10);
+           }
+       }
     }
+   
 
     SSLSocketStream::_init_syn();
     //
@@ -296,7 +264,7 @@ void BaseHTTPRequestHandler::connect_intercept()
     }
     //响应CONNECT消息
     char temp[1024] = { 0 };
-    wsprintfA(temp, "%s %d %s\r\n\r\n", "HTTP/1.1", 200, "Connection Established");
+    wsprintfA(temp, "%s %d %s\r\n\r\n", http_items.m_version, 200, "Connection Established");
     m_pHttpSession->m_pSendbuf = (char*)malloc(strlen(temp));
     memset(m_pHttpSession->m_pSendbuf, 0, strlen(temp));
     memcpy_s(m_pHttpSession->m_pSendbuf, strlen(temp), temp, strlen(temp));
@@ -320,22 +288,6 @@ void BaseHTTPRequestHandler::connect_relay()
 }
 
 /*
-用作代理服务器过滤http headers
-*/
-void BaseHTTPRequestHandler::headerfilterforAgent(HttpHeaders*pHttpHeaders)
-{
-    char *list[] = { "Proxy-Connection","proxy-authenticate","proxy-authorization","Strict-Transport-Security",NULL };
-    int i = 0;
-    char *p = NULL;
-    for (;; i++) {
-        p = list[i];
-        if (p == NULL)break;
-        pHttpHeaders->del(p);
-    }
-}
-
-
-/*
 这个地方接收处理数据，返回给服务器需要处理的方法
 */
 void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataHandler_RET * ret)//在这个位置,buf所指内存已经没有意义了
@@ -343,40 +295,38 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
     BaseDataHandler_RET* p_ret = NULL;
     size_t headersize = 0;
     int result = BaseSocketStream::BSS_RET_UNKNOWN;
+    char * pContent_Length = NULL;
+    long Content_Length = 0;
+
     ret->dwOpt = RET_UNKNOWN;
-    result = m_pBaseSockeStream->read(recvbuf, len); //buf就是接受到的数据，在这个函数调用完之后，buf就已经不在使用了
+    result = m_pBaseSockeStream->read(recvbuf, len); 
+
     if (result == BaseSocketStream::BSS_RET_RESULT) {
         if (m_len_recvbuf > 0 && m_precv_buf != NULL)
         {//处理的数据正确，在查找数据，否则不处理
 
-            if ((headersize = find_httpheader(m_precv_buf,m_len_recvbuf)) > 0) 
-            {
-                if (http_items.parse_httpheaders((const char*)m_precv_buf, m_len_recvbuf, HttpHeaders::HTTP_REQUEST)) 
-                {
-                    //获取到分类的信息
-                    char *pTemp = NULL;
-                    if ((pTemp = http_items["Content-Length"]) != NULL) {
+            if ((headersize = find_httpheader(m_precv_buf,m_len_recvbuf)) > 0) {
+
+                if (http_items.parse_httpheaders((const char*)m_precv_buf, m_len_recvbuf, HttpHeaders::HTTP_REQUEST)) {
+
+                    if ((pContent_Length = http_items["Content-Length"]) != NULL) {
                         //发现长度
-                        int content_length = strtol(pTemp, NULL, 10);
-                        if (headersize + content_length <= m_len_recvbuf)
-                        {//说明已经接收完全部数据
-                         //初始化接收到的数据内容
-                            httpcontent.insert(m_precv_buf + headersize, content_length);
-                            invokeRequestCallback(&http_items);
+                        Content_Length = strtol(pContent_Length, NULL, 10);
+                        if (headersize + Content_Length <= m_len_recvbuf) {//说明已经接收完全部数据
+                            httpcontent.insert(m_precv_buf + headersize, Content_Length);
+                            //invokeRequestCallback(&http_items);
                             invokeMethod(http_items.m_method);
                             reset();
                             RELEASE_RECVBUF()
                             ret->dwOpt = RET_SEND; 
                         }
                         else {
-                            invokeRequestCallback(&http_items);
-                            invokeMethod(http_items.m_method);
                             reset();
                             ret->dwOpt = RET_RECV;
                         }
                     }
                     else {
-                        invokeRequestCallback(&http_items);
+                        //invokeRequestCallback(&http_items);
                         invokeMethod(http_items.m_method);
                         reset(); 
                         RELEASE_RECVBUF()
@@ -384,11 +334,11 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
                     }
                 }//if (http_items.parse_httpheaders((const char*)m_precv_b........
                 else {
-                    reset();                //清理用不到的内存
+                    reset(); 
                     RELEASE_RECVBUF()
                     ret->dwOpt = RET_RECV;
                 }
-            }
+            }//if ((headersize = find_httpheader(m_precv_buf,m_len_recvbuf)) > 0) 
             else {
                 ret->dwOpt = RET_RECV;
             }
@@ -401,17 +351,10 @@ void BaseHTTPRequestHandler::handler_request(void *recvbuf, DWORD len, BaseDataH
         RELEASE_RECVBUF()
         ret->dwOpt = RET_SEND;
     }
-    else {
 
-    }
     return;
 }
 
-/*
-查找接收的数据中是否完成存在http header
-判断完整性的标志就是在http header的结尾存在"\r\n\r\n"
-返回值: 如果没有发现完成http头，返回-1。否则，返回http头的长度
-*/
 size_t BaseHTTPRequestHandler::find_httpheader(const char* buf, size_t bufsize) {
     size_t httplen = 0;
     char *pHttpFlag = NULL;
@@ -433,6 +376,9 @@ size_t BaseHTTPRequestHandler::find_httpheader(const char* buf, size_t bufsize) 
 分配调用对应的处理器方法
 */
 void BaseHTTPRequestHandler::invokeMethod(const char * method) {
+
+    invokeRequestCallback(&http_items);
+
     if (_stricmp(method, "CONNECT") == 0) {
         do_CONNECT();
     }
@@ -472,21 +418,32 @@ void BaseHTTPRequestHandler::invokeRequestCallback(HttpHeaders *http_headers)
 /*
 请求返回后，调用回调函数
 */
-void BaseHTTPRequestHandler::invokeResponseCallback(char *buf,size_t len)
+void BaseHTTPRequestHandler::invokeResponseCallback(char **buf, size_t *plen)
 {
     CALLBACK_DATA callback_data;
-    if(buf == NULL || len == 0)
-        return;
-
-    if(IsBadReadPtr(buf,len))
+    if(*buf == NULL || *plen == 0)
         return;
 
     memset(&callback_data, 0, sizeof(CALLBACK_DATA));
-    callback_data.buf=(char*)malloc(len);
-    memset(callback_data.buf,0,len);
-    memcpy_s(callback_data.buf,len,buf,len);
+    callback_data.buf = (char*)malloc(*plen);
+    memset(callback_data.buf, 0, *plen);
+
+    memcpy_s(callback_data.buf, *plen, *buf, *plen);
+    callback_data.len = *plen;
+    
 
     m_pHttpService_Params->response_callback(&callback_data);
+
+    if(*buf != NULL){
+        free(*buf);
+        *buf = NULL;
+    }
+
+    *buf = (char*) malloc(callback_data.len);
+    memset(*buf, 0, callback_data.len);
+    memcpy_s(*buf, callback_data.len, callback_data.buf, callback_data.len);
+
+    *plen = callback_data.len;
 
     //处理完之后，清理掉内存
     if (callback_data.buf != NULL) {
