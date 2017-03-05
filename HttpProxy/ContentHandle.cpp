@@ -3,11 +3,14 @@
 #include "..\include\pcre\pcre2.h"
 #include "ContentHandle.h"
 
-
-BOOL __stdcall ContentHandle::search_content(const char *sbuf, size_t bufsize, const char *reg, char **pFirstPos, size_t *offset)
-{
+//from pcre document
+BOOL __stdcall ContentHandle::search_content(const char *sbuf, 
+                                             size_t bufsize, 
+                                             const char *reg, 
+                                             char **pFirstPos, 
+                                             size_t *offset) {
     pcre2_code *re;
-    PCRE2_SPTR pattern = (PCRE2_SPTR)reg;     /* PCRE2_SPTR is a pointer to unsigned code units of */
+    PCRE2_SPTR pattern = (PCRE2_SPTR)reg; 
     size_t pos = 0;
     int errornumber;
     int rc;
@@ -46,8 +49,7 @@ BOOL __stdcall ContentHandle::search_content(const char *sbuf, size_t bufsize, c
 
     ovector = pcre2_get_ovector_pointer(match_data);
 
-    if (ovector == NULL)
-    {
+    if (ovector == NULL) {
         pcre2_match_data_free(match_data);
         pcre2_code_free(re);
         if (pFirstPos != NULL) *pFirstPos = NULL;

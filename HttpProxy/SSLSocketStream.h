@@ -8,9 +8,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include <openssl\ssl.h>
 #include <openssl\err.h>
 #include <openssl\bio.h>
+
 #ifdef __cplusplus
 }
 #endif
@@ -18,8 +20,7 @@ extern "C" {
 #include "header.h"
 #include "BaseSocketStream.h"
 
-class  SSLSocketStream:public BaseSocketStream
-{
+class  SSLSocketStream:public BaseSocketStream {
 public:
     SSLSocketStream(char**pprecv_buf, DWORD *len_recv_buf, char**ppsend_buf, DWORD *len_send_buf);
     virtual ~SSLSocketStream();

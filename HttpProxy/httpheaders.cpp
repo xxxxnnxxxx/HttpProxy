@@ -84,11 +84,8 @@ HttpHeaders::HttpHeaders() {
 HttpHeaders::~HttpHeaders() {
     release();
 }
-
 //通过key的值获取内容
-/*
-key 是http的属性字段名称，根据协议，key不区分大小写
-*/
+//key 是http的属性字段名称，根据协议，key不区分大小写
 char * HttpHeaders::operator[](char *key) {
     PLIST_ENTRY plist;
     BOOL bFind = FALSE;
@@ -124,11 +121,7 @@ char *HttpHeaders::operator[](int index) {
 
     return val;
 }
-
-
-/*
-根据key的值，返回val值
-*/
+//根据key的值，返回val值
 char* HttpHeaders::search(char*key)
 {
     PLIST_ENTRY plist;
@@ -146,15 +139,12 @@ char* HttpHeaders::search(char*key)
 
     return val;
 }
-
-/*
-参数:
-index 遍历索引
-key   返回key的值
-val   返回val的值
-返回值:
-如果找到值，返回1 否则返回0
-*/
+//参数:
+//index 遍历索引
+//key   返回key的值
+//val   返回val的值
+//返回值:
+//如果找到值，返回1 否则返回0
 int HttpHeaders::search(int index, char **key, char** val)
 {
     int ret = 0;
@@ -182,14 +172,11 @@ int HttpHeaders::search(int index, char **key, char** val)
     
     return ret;
 }
-
-/*
-重载，完成构造函数的完全拷贝
-*/
-HttpHeaders & HttpHeaders::operator=(const HttpHeaders hh)
-{
+//重载，完成构造函数的完全拷贝
+HttpHeaders & HttpHeaders::operator=(const HttpHeaders hh) {
     return *this;
 }
+
 void HttpHeaders::insert(const char *key, const char *val) {
     struct _list_ *pKeyVal = NULL;
     size_t len_key = 0;
@@ -247,26 +234,25 @@ void HttpHeaders::insert(const char *key, size_t len_key, const char *val, size_
     //计数加一
     m_count++;
 }
-
-/*
-把http头中的内容按照http协议的格式返回缓冲区
-len 返回缓冲区长度
-返回值: 内容指针
-*/
+//把http头中的内容按照http协议的格式返回缓冲区
+//len 返回缓冲区长度
+//返回值: 内容指针
 char * HttpHeaders::getbuffer(size_t *len) {
+
     char *result = NULL;
     size_t pos = 0;
+    PLIST_ENTRY plist;
+    struct _list_ *pelem = NULL;
+    char *val = NULL;
+    int i = 0;
+
     //分配的长度的大小按属性的个数和空行的http头的特性分配内存
     //2*m_count =": \r\n"*m_count, 2="\r\n" 1=space
     size_t len_result = m_length + 3 * m_count + 2 + 1;
     result = (char*)malloc(len_result);
     memset(result, 0, len_result);
-    PLIST_ENTRY plist;
-    struct _list_ *pelem = NULL;
-    char *val = NULL;
-    int i = 0;
-    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink)
-    {
+
+    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink) {
         //
         pelem = CONTAINING_RECORD(plist, struct _list_, list_entry);
         memcpy_s(result + pos, len_result - pos, pelem->key, pelem->key_len);
@@ -284,19 +270,17 @@ char * HttpHeaders::getbuffer(size_t *len) {
     memcpy_s(result + pos, len_result - pos, "\r\n", 2);
     pos += 2;
 
-    
     *len = pos;
     return result;
 }
 
-PLIST_ENTRY HttpHeaders::enumheaders(int index)
-{
+PLIST_ENTRY HttpHeaders::enumheaders(int index) {
+
     PLIST_ENTRY plist;
     struct _list_ *pelem = NULL;
     char *val = NULL;
     int i = 0;
-    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink)
-    {
+    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink) {
         pelem = CONTAINING_RECORD(plist, struct _list_, list_entry);
         //
         if (i == index) {
@@ -306,20 +290,12 @@ PLIST_ENTRY HttpHeaders::enumheaders(int index)
     }
 
     return plist;
-
 }
 
-int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequest)
-{
+int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequest) {
+
     int ret = 0;
     char * cheaders = NULL;
-    if (len == 0 || headers == NULL)
-        return 0L;
-
-    cheaders = (char*)malloc(len + 1);
-    memset(cheaders, 0, len + 1);
-    memcpy_s(cheaders, len + 1, headers, len);
-
     char *pItem = NULL;
     char *next_token = NULL;
     char *next_token2 = NULL;
@@ -328,6 +304,14 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
     char *d3 = ":"; //分析http协议属性
     char *pInfo = NULL;
     char *endstr = NULL;
+
+
+    if (len == 0 || headers == NULL)
+        return 0L;
+
+    cheaders = (char*)malloc(len + 1);
+    memset(cheaders, 0, len + 1);
+    memcpy_s(cheaders, len + 1, headers, len);
 
     pItem = strtok_s(cheaders, d, &next_token);
     switch (bHttpRequest) 
@@ -362,8 +346,7 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
 
     //
     pItem = strtok_s(NULL, d, &next_token);
-    while (pItem)
-    {
+    while (pItem) {
         //获取行信息
         char *pTemp = (char*)(pItem + separat_httpattributes(pItem));
         if (pTemp == "") {
@@ -371,7 +354,6 @@ int HttpHeaders::parse_httpheaders(const char *headers, size_t len,int bHttpRequ
             continue;
         }
         *(pTemp - 1) = '\0';
-
         
         insert(pItem, pTemp);
 
@@ -413,13 +395,10 @@ dail:
 
     return 1L;
 }
-
-/*
-分析request the first line
-*/
+//分析request the first line
 //request the first line format:Request-Line   = Method SP Request-URI SP HTTP-Version CRLF
-int HttpHeaders::parse_request_line(char *rl, int len)
-{
+int HttpHeaders::parse_request_line(char *rl, int len) {
+
     int ret = -1;
     int pos[3] = { 0 }; //记录起始位置
     int i=0,j = 0;
@@ -441,23 +420,14 @@ int HttpHeaders::parse_request_line(char *rl, int len)
     
     return ret;
 }
+//分析response the first line
+int HttpHeaders::parse_response_line(char *rl, int len) {
 
-/*
-分析response the first line
-*/
-int HttpHeaders::parse_response_line(char *rl, int len)
-{
     int ret = -1;
-
-
     return ret;
 }
-
-/*
-得到请求的url
-*/
-size_t HttpHeaders::get_request_uri(char *buf, size_t len)
-{
+//得到请求的url
+size_t HttpHeaders::get_request_uri(char *buf, size_t len) {
     char *prequest_uri = NULL;
     size_t result = 0;
     char *phost = (*this)["Host"];
@@ -493,19 +463,17 @@ size_t HttpHeaders::get_request_uri(char *buf, size_t len)
     }
     return result;
 }
-/*正确返回非0*/
-/*
-整体的httpheaders需要进行调整
-可以方便的修改属性等特征
-*/
-int HttpHeaders::set_request_uri(char *buf, size_t len)
-{
+//正确返回非0
+//整体的httpheaders需要进行调整
+//可以方便的修改属性等特征
+int HttpHeaders::set_request_uri(char *buf, size_t len) {
+
     int ret = 0;
     
-    if(buf == NULL || len == 0 ) return 0;
+    if(buf == NULL || len == 0 ) 
+        return 0;
 
-    do 
-    {
+    do {
         //判断原有的m_uri是否有http或https的形式
         if (_strnicmp(m_uri, "http",4) == 0) {
                 //释放原有的m_uri
@@ -535,15 +503,12 @@ int HttpHeaders::set_request_uri(char *buf, size_t len)
             ret = 1;
             break;
         }
-
     } while (0);
-
 
     return ret;
 }
 
-int HttpHeaders::separat_httpattributes(const char *attr)
-{
+int HttpHeaders::separat_httpattributes(const char *attr) {
     const char *pPos = attr;
     while (*pPos != '\0') if (*pPos++ == ':')break;
     return (int)(pPos - attr);
@@ -576,11 +541,10 @@ void HttpHeaders::del(const char *key) {
         RemoveElement(plist);
         free(plist);
     }
-
 }
 
-void HttpHeaders::del(int index)
-{
+void HttpHeaders::del(int index) {
+
     PLIST_ENTRY plist;
     struct _list_ *pelem = NULL;
     int i = 0;
@@ -609,23 +573,21 @@ void HttpHeaders::del(int index)
         RemoveElement(plist);
         free(plist);
     }
-
 }
-
 //释放所有的内存
 void  HttpHeaders::release() {
+
     PLIST_ENTRY plist;
     struct _list_ *pelem = NULL;
     int i = 0;
-    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink)
-    {
+
+    for (plist = m_ListHeader.Flink; plist != &m_ListHeader; plist = plist->Flink) {
         pelem = CONTAINING_RECORD(plist, struct _list_, list_entry);
         if (pelem->key != NULL) free(pelem->key);
         if (pelem->val != NULL) free(pelem->val);
     }
 
-    for (i = 0; i < m_count; i++)
-    {
+    for (i = 0; i < m_count; i++) {
         PLIST_ENTRY pList=RemoveHeadList(&m_ListHeader);
         free(pList);
     }

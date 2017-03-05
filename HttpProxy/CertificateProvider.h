@@ -15,12 +15,12 @@ public:
     CertificateProvider();
     ~CertificateProvider();
     enum{
-        FORMAT_ASN1=1,
-        FORMAT_PEM=2,
+        FORMAT_ASN1 = 1,
+        FORMAT_PEM = 2,
     };
 
     enum{
-        DEF_DAYS=30,
+        DEF_DAYS = 30,
     };
 
 public:

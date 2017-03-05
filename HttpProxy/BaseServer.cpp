@@ -22,8 +22,8 @@ enum _ControlCode_ {
 
 
 //默认服务状态回调
-void __stdcall Default_ServerStatus_Callback(ULONG status)
-{
+void __stdcall Default_ServerStatus_Callback(ULONG status) {
+
 #ifdef _DEBUG
     //::OutputDebugStringA("Default_ServerStatus_Callback\n");
 #endif
@@ -34,8 +34,8 @@ void __stdcall Default_ServerStatus_Callback(ULONG status)
 BaseServer::BaseServer(HTTPSERVICE_PARAMS *pHttpService_Params) :
     m_hCompletionPort(INVALID_HANDLE_VALUE), m_ThreadCount(0),
     m_listensocket(INVALID_SOCKET), m_hServerThread(NULL), m_status(STATUS_GET),
-    m_hMainThread(NULL)
-{
+    m_hMainThread(NULL) {
+
     memcpy_s(&m_HttpService_Params, sizeof(HTTPSERVICE_PARAMS), pHttpService_Params, sizeof(HTTPSERVICE_PARAMS));
 
     //设置服务回调函数
@@ -57,10 +57,8 @@ BaseServer::BaseServer(HTTPSERVICE_PARAMS *pHttpService_Params) :
 BaseServer::~BaseServer() {
 
 }
-
 //初始化
-ULONG BaseServer::init_httpserver()
-{
+ULONG BaseServer::init_httpserver() {
     WSADATA wsa;
     int ret = BaseServer::BHSR_SUCCESS;
 
@@ -95,8 +93,8 @@ ULONG BaseServer::init_httpserver()
 
 
 //no safe???
-void BaseServer::uninit_httpserver()
-{
+void BaseServer::uninit_httpserver() {
+
     if (m_ThreadCount != 0 && m_pThreadArray != NULL) {
         for (int i = 0; i < m_ThreadCount; i++) {
             CloseHandle(m_pThreadArray[i]);
@@ -105,7 +103,6 @@ void BaseServer::uninit_httpserver()
         m_ThreadCount = 0;
     }
 
-
     if (m_pThreadArray != NULL)
         ::free(m_pThreadArray);
 
@@ -113,7 +110,6 @@ void BaseServer::uninit_httpserver()
         ::CloseHandle(m_hCompletionPort);
 
     m_ThreadCount = 0;
-
     
     if (m_listensocket != INVALID_SOCKET) {
         
@@ -123,47 +119,39 @@ void BaseServer::uninit_httpserver()
     }
 
     uninit_httpserver_ex();
-
     return;
 }
 
-DWORD BaseServer::ServerThread(LPVOID lparam)
-{
+DWORD BaseServer::ServerThread(LPVOID lparam) {
     BaseServer* pthis = (BaseServer*)lparam;
     pthis->http_server();
     return 0L;
 }
+//bNewThread 1 新线程启动
+//0 当前线程
+//注意:bNewThread应当设置为１，主要是防止阻塞主线程
+ULONG BaseServer::server_forever(int bNewThread) {
 
-/*
-bNewThread 1 新线程启动
-0 当前线程
-注意:bNewThread应当设置为１，主要是防止阻塞主线程
-*/
-ULONG BaseServer::server_forever(int bNewThread)
-{
     if (bNewThread)
-    {
         m_hMainThread = ::CreateThread(NULL, 0, ServerThread, this, 0, 0);
-    }
-    else {
+    else
         http_server();
-    }
+
     if (m_hMainThread == NULL)
-    {
         return BaseServer::BHSR_ERROR_START;
-    }
+
     return BaseServer::BHSR_SUCCESS;
 }
 
-DWORD WINAPI BaseServer::StopServerThread(LPVOID lparam)
-{
+DWORD WINAPI BaseServer::StopServerThread(LPVOID lparam) {
+
     BaseServer*pthis = (BaseServer*)lparam;
     pthis->stopserver();
     return 0L;
 }
 
-void BaseServer::stopserver()
-{
+void BaseServer::stopserver() {
+
     DWORD dwRet = WaitForMultipleObjects(m_ThreadCount, m_pThreadArray, TRUE, INFINITE);
     Release_AcceptConnectionList();
     uninit_httpserver();
@@ -171,8 +159,8 @@ void BaseServer::stopserver()
 /*
 关闭http服务器
 */
-ULONG BaseServer::stop()
-{
+ULONG BaseServer::stop() {
+
     //关闭监听线程
     if (m_listensocket != INVALID_SOCKET) {
         shutdown(m_listensocket, SD_BOTH);
@@ -182,7 +170,10 @@ ULONG BaseServer::stop()
 
     ::CreateThread(NULL, 0, StopServerThread, this, 0, 0);
     for (int i = 0; i < m_ThreadCount; i++) {
-        BOOL bRet=PostQueuedCompletionStatus(m_hCompletionPort, 0, (ULONG_PTR)CONTROLCODE_SHUTDOWN, 0); //向所有的工作线程发送消息
+        BOOL bRet = PostQueuedCompletionStatus(m_hCompletionPort, 
+                                               0, 
+                                               (ULONG_PTR)CONTROLCODE_SHUTDOWN, 
+                                               0); //向所有的工作线程发送消息
         if (!bRet) {
             //错误处理
         }
@@ -191,20 +182,18 @@ ULONG BaseServer::stop()
         }
     }
     
-   return  BaseServer::BHSR_SUCCESS;
+    return  BaseServer::BHSR_SUCCESS;
 }
 
-DWORD WINAPI BaseServer::work_proc(LPVOID lparam)
-{
+DWORD WINAPI BaseServer::work_proc(LPVOID lparam) {
+
     BaseServer *pthis = reinterpret_cast<BaseServer*>(lparam);
     pthis->server_loop(NULL, 0);
     return 0L;
 }
-
-
 //
-void BaseServer::server_loop(LPVOID lparam, size_t len)
-{
+void BaseServer::server_loop(LPVOID lparam, size_t len) {
+
     //完成端口句柄直接利用
     while (TRUE) {
         DWORD BytesTransferred = 0;
@@ -213,15 +202,16 @@ void BaseServer::server_loop(LPVOID lparam, size_t len)
         session_overlapped *psession = NULL;
         DWORD ControlCode = 0;
         //接收数据
-        if (GetQueuedCompletionStatus(m_hCompletionPort, &BytesTransferred,
-            (PULONG_PTR)&ControlCode, (LPOVERLAPPED *)&Overlapped, INFINITE) == 0)
-        {
+        if (GetQueuedCompletionStatus(m_hCompletionPort, 
+                                      &BytesTransferred,
+                                      (PULONG_PTR)&ControlCode, 
+                                      (LPOVERLAPPED *)&Overlapped, 
+                                      INFINITE) == 0) {
             //可以不处理
         }
 
         //
-        if (ControlCode == CONTROLCODE_IOCONTINUE)
-        {
+        if (ControlCode == CONTROLCODE_IOCONTINUE) {
 
             psession = reinterpret_cast<session_overlapped*>(Overlapped);
             if (psession == NULL) {
@@ -237,8 +227,7 @@ void BaseServer::server_loop(LPVOID lparam, size_t len)
 
             pAcceptConnection->HandleIoCompletion(BytesTransferred, psession);
         }
-        else if (ControlCode == CONTROLCODE_SHUTDOWN)
-        {
+        else if (ControlCode == CONTROLCODE_SHUTDOWN) {
             break;
         }
 
@@ -247,15 +236,13 @@ void BaseServer::server_loop(LPVOID lparam, size_t len)
 }
 
 //http server
-ULONG BaseServer::http_server()
-{
+ULONG BaseServer::http_server() {
 
     if (m_hCompletionPort == INVALID_HANDLE_VALUE)
         return BaseServer::BHSR_ERROR_CREATE_SEVICE;
 
     //根据处理器的数量，创建完成的端口执行所需要的线程
-    for (int i = 0; i < m_ThreadCount; i++)
-    {
+    for (int i = 0; i < m_ThreadCount; i++) {
         m_pThreadArray[i] = ::CreateThread(NULL, 0, work_proc, this, 0, 0);
     }
 
@@ -279,8 +266,7 @@ ULONG BaseServer::http_server()
     while (TRUE){      
         //accept 
         accept_socket = ::WSAAccept(m_listensocket, (struct sockaddr*)&accept_addr, &addrlen, NULL, 0);
-        if (accept_socket == INVALID_SOCKET)
-        {
+        if (accept_socket == INVALID_SOCKET) {
             int error = WSAGetLastError();
             break;
         }
@@ -288,7 +274,10 @@ ULONG BaseServer::http_server()
         setsockopt(accept_socket, IPPROTO_TCP, TCP_NODELAY, (const char*)&tcpopt, 1);
 
         //传入的数据需要初始化  
-        PACCEPTCONNECTION ac = new AcceptConnection(m_hCompletionPort, accept_socket, accept_addr, &m_HttpService_Params);
+        PACCEPTCONNECTION ac = new AcceptConnection(m_hCompletionPort, 
+                                                    accept_socket, 
+                                                    accept_addr, 
+                                                    &m_HttpService_Params);
         PLIST_ACCEPTCONNECTION plist_acceptconnection = (PLIST_ACCEPTCONNECTION)malloc(sizeof(LIST_ACCEPTCONNECTION));
         memset(plist_acceptconnection, 0, sizeof(LIST_ACCEPTCONNECTION));
         plist_acceptconnection->pAcceptConnection = ac;
@@ -303,7 +292,13 @@ ULONG BaseServer::http_server()
 
         DWORD RecvBytes = 0;
         DWORD Flags = 0;
-        if (WSARecv(accept_socket, &ac->m_wsabuf[AcceptConnection::RECV], 1, &RecvBytes, &Flags, (LPWSAOVERLAPPED)&ac->m_overlapped[AcceptConnection::RECV].overlapped, NULL) == SOCKET_ERROR) {
+        if (WSARecv(accept_socket, 
+                    &ac->m_wsabuf[AcceptConnection::RECV], 
+                    1, 
+                    &RecvBytes, 
+                    &Flags, 
+                    (LPWSAOVERLAPPED)&ac->m_overlapped[AcceptConnection::RECV].overlapped, 
+                    NULL) == SOCKET_ERROR) {
             if (WSAGetLastError() != ERROR_IO_PENDING)
             {
 
@@ -311,41 +306,35 @@ ULONG BaseServer::http_server()
                 return BaseServer::BHSR_ERROR_CREATE_SEVICE;
             }
         }
-    }
+    }//while (TRUE)
 
     return BaseServer::BHSR_SUCCESS;
 }
 
+void BaseServer::Release_AcceptConnectionList() {
 
-void BaseServer::Release_AcceptConnectionList() //
-{
     PLIST_ENTRY plist;
     struct _list_acceptconnection_ *pelem = NULL;
     int i = 0;
     int count = 0;
-    for (plist = m_AcceptConnectList.Flink; plist != &m_AcceptConnectList; plist = plist->Flink)
-    {
+    for (plist = m_AcceptConnectList.Flink; plist != &m_AcceptConnectList; plist = plist->Flink) {
         pelem = CONTAINING_RECORD(plist, struct _list_acceptconnection_, list_entry);
         if (pelem->pAcceptConnection != NULL) delete pelem->pAcceptConnection;
 
         count++;
     }
 
-    for (i = 0; i < count; i++)
-    {
+    for (i = 0; i < count; i++) {
         PLIST_ENTRY pList = RemoveHeadList(&m_AcceptConnectList);
         free(pList);
     }
 }
-
 //清空某一个元素
-void BaseServer::DeleteElem_AcceptConnectionList(AcceptConnection *addr)
-{
+void BaseServer::DeleteElem_AcceptConnectionList(AcceptConnection *addr) {
     PLIST_ENTRY plist;
     struct _list_acceptconnection_ *pelem = NULL;
     BOOL bFind = FALSE;
-    for (plist = m_AcceptConnectList.Flink; plist != &m_AcceptConnectList; plist = plist->Flink)
-    {
+    for (plist = m_AcceptConnectList.Flink; plist != &m_AcceptConnectList; plist = plist->Flink) {
         pelem = CONTAINING_RECORD(plist, struct _list_acceptconnection_, list_entry);
         //
         if (pelem->pAcceptConnection == addr) {
@@ -361,40 +350,25 @@ void BaseServer::DeleteElem_AcceptConnectionList(AcceptConnection *addr)
         free(plist);
     }
 }
-
-
-//
-/*
-服务器状态控制, 返回当前状态值
-*/
-ULONG BaseServer::status(ULONG status_val, ULONG *dwRet)
-{
+//服务器状态控制, 返回当前状态值
+ULONG BaseServer::status(ULONG status_val, ULONG *dwRet) {
     if (dwRet == NULL)
         return m_status;
 
-
-    if (status_val&STATUS_GET) {
+    if (status_val&STATUS_GET)
         return m_status;
-    }
     else
         m_status = status_val;
 
-
     *dwRet= handle_status();
-
     return m_status;
 }
-
-/*
-处理状态，返回当前状态值
-*/
-ULONG BaseServer::handle_status()
-{//
+//处理状态，返回当前状态值
+ULONG BaseServer::handle_status() {//
     ULONG dwRet = BHSR_SUCCESS;
 
     //启动
-    if (m_status&STATUS_RUN)
-    {
+    if (m_status&STATUS_RUN) {
         dwRet = init_httpserver();
         if(dwRet==BHSR_SUCCESS)
             dwRet=server_forever(TRUE);
@@ -410,25 +384,17 @@ ULONG BaseServer::handle_status()
 
     return dwRet;
 }
-
 //
-int BaseServer::init_httpserver_ex()
-{
+int BaseServer::init_httpserver_ex() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     return BaseServer::BHSR_SUCCESS;
 }
-
-
 //反初始化扩展
-void BaseServer::uninit_httpserver_ex()
-{
+void BaseServer::uninit_httpserver_ex() {
     curl_global_cleanup();
 }
-
-
-/*测试计数，只在Debug下起作用*/
-void BaseServer::counter(BOOL bDec)
-{
+//测试计数，只在Debug下起作用
+void BaseServer::counter(BOOL bDec) {
 #ifdef _DEBUG
     EnterCriticalSection(&m_lock_counter);
     if (bDec)
