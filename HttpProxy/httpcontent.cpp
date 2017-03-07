@@ -43,8 +43,13 @@ char * HttpContent::getbuffer(size_t *len)
 {
     char *result = NULL;
     size_t pos = 0;
+
+    if(m_length == 0)
+        return NULL;
+
     result = (char*)malloc(m_length);
     memset(result, 0, m_length);
+
     PLIST_ENTRY plist = NULL;
     struct _list_httpcontent_block_ *pelem = NULL;
     for (plist = m_ListContent.Flink; plist != &m_ListContent; plist = plist->Flink)
@@ -75,5 +80,6 @@ void HttpContent::release()
     }
 
     m_count = 0;
+    m_length = 0;
 
 }
