@@ -1,5 +1,5 @@
 # Http/Https Proxy
-##不在更新此分支
+##不再更新此分支
 ##问题
 
 - 1.必须调用Hijack_Https函数保证能劫持Https，因为库中没有实现对Http/https的透明代理部分，所以不初始化https，造成https的数据请求出错，后果比较严重。
