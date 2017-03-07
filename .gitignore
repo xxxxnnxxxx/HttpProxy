@@ -32,3 +32,5 @@
 *.7z
 
 /Cert_PriKey/
+
+/lua/
