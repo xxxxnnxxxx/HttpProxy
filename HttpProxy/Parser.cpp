@@ -2,9 +2,7 @@
 #include "headers.h"
 #include "Parser.h"
 
-
-void Parser::RequestHttpHeadersParser(HttpHeaders *headers)
-{
+void Parser::RequestHttpHeadersParser(HttpHeaders *headers) {
     char *list[] = { "Proxy-Connection", "proxy-authenticate", "proxy-authorization", "Strict-Transport-Security",NULL };
     int i = 0;
     char *p = NULL;
@@ -15,8 +13,8 @@ void Parser::RequestHttpHeadersParser(HttpHeaders *headers)
     }
 }
 
-void Parser::ResponseHttpHeadersParser(HttpHeaders *response_headers, HttpHeaders* request_headers)
-{
+void Parser::ResponseHttpHeadersParser(HttpHeaders *response_headers, HttpHeaders* request_headers) {
+
     char *list[] = { "Proxy-Connection", "proxy-authenticate", "proxy-authorization", "Strict-Transport-Security",NULL };
     int i = 0;
     char *p = NULL;
@@ -44,6 +42,4 @@ void Parser::ResponseHttpHeadersParser(HttpHeaders *response_headers, HttpHeader
             request_uri = NULL;
         }
     }
-
-
 }

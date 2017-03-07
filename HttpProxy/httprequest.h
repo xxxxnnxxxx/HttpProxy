@@ -1,5 +1,6 @@
 #ifndef _HTTPREQUEST_H_
 #define _HTTPREQUEST_H_
+
 #include "header.h"
 #include <winhttp.h>
 #include "list_entry.h"

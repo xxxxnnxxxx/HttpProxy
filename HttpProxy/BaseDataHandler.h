@@ -1,16 +1,17 @@
-#pragma once
+#ifndef _BASEDATAHANDLER_H_
+#define _BASEDATAHANDLER_H_
 
 #include <Windows.h>
 
 
-//BaseHTTPRequestHandler与服务器之间的通讯所用
+// BaseHTTPRequestHandler与服务器之间的通讯所用
 typedef struct _ret_ {
-    DWORD dwOpt;    //操作类型:继续接收数据，停止接收数据，中断，发送数据
+    DWORD dwOpt;    // 操作类型:继续接收数据，停止接收数据，中断，发送数据
 }BaseDataHandler_RET;
 
 
 class BaseDataHandler {
-public:
+ public:
     BaseDataHandler();
     virtual ~BaseDataHandler();
     enum {
@@ -20,6 +21,8 @@ public:
         RET_ERROR = 4,
         RET_UNKNOWN = 0xFFFFFFFF,
     };
-public:
+ public:
     virtual void handler_request(void *buf, DWORD len, BaseDataHandler_RET * ret)=0;
 };
+
+#endif // _BASEDATAHANDLER_H_

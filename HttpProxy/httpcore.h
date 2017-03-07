@@ -25,4 +25,4 @@ extern "C" HTTPCORE_API BOOL        __stdcall ExportRootCert(/*IN*/SCG_HANDLE ha
 extern "C" HTTPCORE_API int         __stdcall Unittest();
 #endif
 //extern "C" HTTPCORE_API BOOL        __stdcall ResetCert(SCG_HANDLE handle);
-#endif
+#endif // _HTTPCORE_H_

@@ -3,9 +3,8 @@
 #include "..\include\pcre\pcre2.h"
 #include "ContentHandle.h"
 
-
-BOOL __stdcall ContentHandle::search_content(const char *sbuf, size_t bufsize, const char *reg, char **pFirstPos, size_t *offset)
-{
+// from pcre's document
+BOOL __stdcall ContentHandle::search_content(const char *sbuf, size_t bufsize, const char *reg, char **pFirstPos, size_t *offset) {
     pcre2_code *re;
     PCRE2_SPTR pattern = (PCRE2_SPTR)reg;
     size_t pos = 0;

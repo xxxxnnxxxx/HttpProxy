@@ -9,8 +9,6 @@
 
 
 AcceptConnection::AcceptConnection(HANDLE hCompletionPort, SOCKET acp, sockaddr_in remoteaddr, HTTPSERVICE_PARAMS *pHttpService_Params) :m_accept(acp) {
-
-    
     memset(m_overlapped, 0, sizeof(session_overlapped) * 2);
     m_overlapped[RECV].pac = m_overlapped[SEND].pac = this;
 
@@ -40,8 +38,7 @@ AcceptConnection::AcceptConnection(HANDLE hCompletionPort, SOCKET acp, sockaddr_
 }
 
 
-void AcceptConnection::Init_DataHandlerObj()
-{
+void AcceptConnection::Init_DataHandlerObj() {
     m_handler = new BaseHTTPRequestHandler(&m_httpservice_params, &m_httpsession); 
 }
 
@@ -63,18 +60,10 @@ AcceptConnection::~AcceptConnection() {
 
 
 void AcceptConnection::init() {
-    //初始化
-
-    //初始化接收结构
     m_wsabuf[RECV].buf = m_recvbuf;
     m_wsabuf[RECV].len = 4096;
-
-
-    //初始化发送结构
     m_wsabuf[SEND].buf = m_httpsession.m_pSendbuf;
     m_wsabuf[SEND].len = m_httpsession.m_SizeofSendbuf;
-
-    //记录一次发送的数据
     m_bytessend = 0;
 }
 /*
@@ -90,10 +79,8 @@ int AcceptConnection::HandleIoCompletion(DWORD numberbytes, session_overlapped  
 
     _entry_();  //锁定，进行操作
 
-    //判断
-    if (poverlapped == &m_overlapped[RECV])
-    {//接收数据
-        m_handler->handler_request(m_recvbuf, numberbytes, &ret_handler);//处理数据
+    if (poverlapped == &m_overlapped[RECV]) {
+        m_handler->handler_request(m_recvbuf, numberbytes, &ret_handler);
         switch (ret_handler.dwOpt)
         {
         case BaseDataHandler::RET_RECV:
@@ -104,8 +91,7 @@ int AcceptConnection::HandleIoCompletion(DWORD numberbytes, session_overlapped  
         case BaseDataHandler::RET_SEND:
         {
 
-            if (m_httpsession.m_resultstate == HttpSession::HS_RESULT_SERVER_NOEXIST)
-            {
+            if (m_httpsession.m_resultstate == HttpSession::HS_RESULT_SERVER_NOEXIST) {
                 m_commstate = CLOSING;
             }
             else {
@@ -116,10 +102,9 @@ int AcceptConnection::HandleIoCompletion(DWORD numberbytes, session_overlapped  
         }
         break;
         }
-    }
-    else if (poverlapped == &m_overlapped[SEND])
-    {//发送数据
-        m_bytessend += numberbytes;   //已经发送的字节
+    } // if (poverlapped == &m_overlapped[RECV]) 
+    else if (poverlapped == &m_overlapped[SEND]) {
+        m_bytessend += numberbytes;
 
         if (m_bytessend == m_httpsession.m_SizeofSendbuf) {
             m_wsabuf[SEND].buf = NULL;
@@ -136,15 +121,11 @@ int AcceptConnection::HandleIoCompletion(DWORD numberbytes, session_overlapped  
     _leave_();
     return ret;
 };
-
-
 //接受数据
-void AcceptConnection::session_recv()
-{
+void AcceptConnection::session_recv() {
     if (m_commstate == RECVING) {
         if (WSARecv(m_accept, &m_wsabuf[RECV], 1, &m_bytes_transferred[RECV], &m_flags[RECV], (LPWSAOVERLAPPED)&m_overlapped[RECV], NULL) == SOCKET_ERROR) {
-            if (WSAGetLastError() != ERROR_IO_PENDING)
-            {
+            if (WSAGetLastError() != ERROR_IO_PENDING) {
 #if _DEBUG
                 DWORD dwerror = WSAGetLastError();
                 printf("session_recv error_code:%d\n",dwerror);
@@ -154,11 +135,8 @@ void AcceptConnection::session_recv()
         }
     }
 }
-
-
 //发送数据
-void AcceptConnection::session_send()
-{
+void AcceptConnection::session_send() {
     if (m_wsabuf[SEND].len == 0) return;
 
     if (m_commstate != SENDING) return;
@@ -173,28 +151,16 @@ void AcceptConnection::session_send()
         }
     } 
 }
-
 //关闭
-void AcceptConnection::session_close()
-{
+void AcceptConnection::session_close() {
     BOOL bRet = FALSE;
     int error = 0;
     if (m_commstate == CLOSING) {
-        /*bRet=PostQueuedCompletionStatus(m_hCompletionPort, 0, 0, &m_overlapped[RECV].overlapped);
-        if (!bRet) {
-#if _DEBUG
-            printf("AcceptConnection::session_close Error:%d",GetLastError());
-#endif
-        }*/
-
         shutdown(m_accept, SD_BOTH);
         closesocket(m_accept);
         m_accept = INVALID_SOCKET;
     }
-
-
 }
-
 
 void AcceptConnection::_entry_() {
     EnterCriticalSection(&m_lock);

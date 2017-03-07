@@ -14,53 +14,44 @@ int number_of_locks = 0;
 ssl_lock *ssl_locks = NULL;
 
 
-void ssl_lock_callback(int mode, int n, const char *file, int line)
-{
+void ssl_lock_callback(int mode, int n, const char *file, int line) {
     if (mode & CRYPTO_LOCK)
         EnterCriticalSection(&ssl_locks[n]);
     else
         LeaveCriticalSection(&ssl_locks[n]);
 }
 
-CRYPTO_dynlock_value* ssl_lock_dyn_create_callback(const char *file, int line)
-{
+CRYPTO_dynlock_value* ssl_lock_dyn_create_callback(const char *file, int line) {
     CRYPTO_dynlock_value *l = (CRYPTO_dynlock_value*)malloc(sizeof(CRYPTO_dynlock_value));
     InitializeCriticalSection(&l->lock);
     return l;
 }
 
-void ssl_lock_dyn_callback(int mode, CRYPTO_dynlock_value* l, const char *file, int line)
-{
+void ssl_lock_dyn_callback(int mode, CRYPTO_dynlock_value* l, const char *file, int line) {
     if (mode & CRYPTO_LOCK)
         EnterCriticalSection(&l->lock);
     else
         LeaveCriticalSection(&l->lock);
 }
 
-void ssl_lock_dyn_destroy_callback(CRYPTO_dynlock_value* l, const char *file, int line)
-{
+void ssl_lock_dyn_destroy_callback(CRYPTO_dynlock_value* l, const char *file, int line) {
     DeleteCriticalSection(&l->lock);
     free(l);
 }
 
-
 BaseSSLConfig* BaseSSLConfig::instance = NULL;  /*初始化为NULL*/
 
-BaseSSLConfig::BaseSSLConfig()
-{
+BaseSSLConfig::BaseSSLConfig() {
     m_rootcert = NULL;
     m_rootkeypair = NULL;
     m_status = STATUS_UNINIT;
 }
 
-BaseSSLConfig::~BaseSSLConfig()
-{
+BaseSSLConfig::~BaseSSLConfig() {
 
 }
 
-
-BaseSSLConfig* BaseSSLConfig::CreateInstance()
-{
+BaseSSLConfig* BaseSSLConfig::CreateInstance() {
     if (instance == NULL) {
         instance = new BaseSSLConfig();
     }
@@ -68,8 +59,7 @@ BaseSSLConfig* BaseSSLConfig::CreateInstance()
     return instance;
 }
 
-BOOL BaseSSLConfig::InitRootCert()
-{
+BOOL BaseSSLConfig::InitRootCert() {
     void* ret = NULL;
     PKCS12*pkcs12 = NULL;
     X509* CA = NULL;
@@ -82,7 +72,7 @@ BOOL BaseSSLConfig::InitRootCert()
 
 
     ret = CertificateProvider::importPriKey(&m_rootkeypair, ___Cert_PriKey_PriKey_pem, ___Cert_PriKey_PriKey_pem_len);
-    if( ret == NULL ){
+    if( ret == NULL ) {
         OPENSSL_free(m_rootcert);
         m_rootcert = NULL;
         m_rootkeypair = NULL;
@@ -92,8 +82,7 @@ BOOL BaseSSLConfig::InitRootCert()
     return TRUE;
 }
 
-BOOL BaseSSLConfig::TrustRootCert()
-{
+BOOL BaseSSLConfig::TrustRootCert() {
     PKCS12 *pkcs12;
     int ret = 0;
 
@@ -101,7 +90,6 @@ BOOL BaseSSLConfig::TrustRootCert()
 
         //判断是否存在证书
         ret = CertificateProvider::is_certexist(m_rootcert, "ROOT", PASSWORD);
-
         if(ret){
 
         }
@@ -112,13 +100,11 @@ BOOL BaseSSLConfig::TrustRootCert()
             }
             return CertificateProvider::addCert2WindowsAuth_ROOT(m_rootcert);
         }
-       
     }
     return FALSE;
 }
 
-BOOL BaseSSLConfig::init_ssl()
-{
+BOOL BaseSSLConfig::init_ssl() {
     BOOL bRet = FALSE;
     do {
 
@@ -147,8 +133,7 @@ BOOL BaseSSLConfig::init_ssl()
     return bRet;
 }
 
-void BaseSSLConfig::uninit_ssl()
-{
+void BaseSSLConfig::uninit_ssl() {
 
     CRYPTO_set_locking_callback(NULL);
     CRYPTO_set_dynlock_create_callback(NULL);
@@ -169,14 +154,12 @@ void BaseSSLConfig::uninit_ssl()
         number_of_locks = 0;
     }
 
-    if(m_rootcert != NULL)
-    {
+    if(m_rootcert != NULL) {
         X509_free(m_rootcert);
         m_rootcert=NULL;
     }
 
-    if(m_rootkeypair != NULL)
-    {
+    if(m_rootkeypair != NULL) {
         EVP_PKEY_free(m_rootkeypair);
         m_rootkeypair=NULL;
     }
@@ -184,8 +167,7 @@ void BaseSSLConfig::uninit_ssl()
     m_status = STATUS_UNINIT;
 }
 
-BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf, int *len)
-{
+BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf, int *len) {
     BOOL bRet=FALSE;
     int ret=0;
 
@@ -200,9 +182,7 @@ BOOL BaseSSLConfig::ExportRootCert(unsigned char *buf, int *len)
     return (BOOL)ret;
 }
 
-/*签名*/
-int BaseSSLConfig::CA(X509*x509)
-{
+int BaseSSLConfig::CA(X509*x509) {
     int ret = 0;
 
     ret = CertificateProvider::x509_certify(x509, m_rootcert, m_rootkeypair);

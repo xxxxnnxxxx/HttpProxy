@@ -9,11 +9,12 @@
 #include "BaseSocketStream.h"
 #include "BaseDataHandler.h"
 
-class BaseHTTPRequestHandler:public BaseDataHandler {
-public:
+class BaseHTTPRequestHandler:public BaseDataHandler 
+{
+ public:
     BaseHTTPRequestHandler(HTTPSERVICE_PARAMS *pHttpService_Params, HttpSession * pHttpSession);
-   virtual ~BaseHTTPRequestHandler();
-public:
+    virtual ~BaseHTTPRequestHandler();
+ public:
     virtual void do_OPTIONS();
     virtual void do_GET();
     virtual void do_HEAD();
@@ -22,21 +23,21 @@ public:
     virtual void do_DELETE();
     virtual void do_TRACE();
     virtual void do_CONNECT();
-private:
+ private:
     //
     virtual void connect_intercept();   //中断后处理
     virtual void connect_relay();       //直接转发
-public:
+ public:
     virtual void handler_request(void *buf, DWORD len, BaseDataHandler_RET * ret);
-private:
+ private:
     size_t find_httpheader(const char* buf, size_t bufsize);
-private:
+ private:
     void invokeMethod(const char *methdo);
     void invokeRequestCallback(HttpHeaders *http_headers);
     void invokeResponseCallback(char **buf, size_t *plen);
     void reset();   //重置，在不完全的接收到所有数据，都需要重置
 
-private:
+ private:
     HttpHeaders             http_items;
     HttpContent             httpcontent;
     HttpRequest             httprequest;
@@ -44,7 +45,7 @@ private:
     BaseSocketStream *      m_pBaseSockeStream;
     WORD                    m_port;        //保存端口号
     char                    m_uri[1024];   //保存主机地址
-public:
+ public:
     char *                  m_precv_buf;      //接受数据的缓冲区，要分析的
     DWORD                   m_len_recvbuf;    //处理后得到的缓冲区长度
     HttpSession *           m_pHttpSession;

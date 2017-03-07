@@ -25,13 +25,13 @@ public:
     CRITICAL_SECTION    m_lock;            //通讯同步锁
 
 
-    SOCKET      m_accept;               //连接的socket
-    sockaddr_in m_remoteaddr;           //接受的远程地址
-    WSABUF      m_wsabuf[2];            //客户端地址信息
-    CHAR        m_recvbuf[4096];        //接收数据缓冲区
-    DWORD       m_bytessend;            //已经发送的数据长度
-    HttpSession m_httpsession;          //HttpSession类贯穿整个的处理过程，所需要对结果的状态都保存在session中
-    HTTPSERVICE_PARAMS  m_httpservice_params;   //保存http传入的变量
+    SOCKET      m_accept;               // 连接的socket
+    sockaddr_in m_remoteaddr;           // 接受的远程地址
+    WSABUF      m_wsabuf[2];            // 客户端地址信息
+    CHAR        m_recvbuf[4096];        // 接收数据缓冲区
+    DWORD       m_bytessend;            // 已经发送的数据长度
+    HttpSession m_httpsession;          // HttpSession类贯穿整个的处理过程，所需要对结果的状态都保存在session中
+    HTTPSERVICE_PARAMS  m_httpservice_params;   // 保存http传入的变量
     enum {
         RECV,
         SEND,
@@ -47,15 +47,14 @@ public:
     ~AcceptConnection();
     void init();
 public:
-    /*
-    处理消息
-    返回值:错误返回-1，成功返回 >0的值(接受完成的字节数)
-    */
+    // 处理消息
+    // 返回值:错误返回-1，成功返回 >0的值(接受完成的字节数)
+    
     int HandleIoCompletion(DWORD numberbytes,session_overlapped  *poverlapped);
 private:
-    void session_recv();    //接受数据
-    void session_send();    //发送数据
-    void session_close();   //关闭
+    void session_recv();    // 接受数据
+    void session_send();    // 发送数据
+    void session_close();   // 关闭
 
     void _entry_();
     void _leave_();
@@ -64,10 +63,10 @@ public:
     BaseDataHandler *m_handler;
 
 public:
-    //数据处理对象的初始化工作
-    void Init_DataHandlerObj(); //可重载，用户切换数据处理方法
+    // 数据处理对象的初始化工作
+    void Init_DataHandlerObj(); // 可重载，用户切换数据处理方法
 };
 
 typedef AcceptConnection* PACCEPTCONNECTION;
 
-#endif
+#endif // _ACCEPTCONNECTION_H_

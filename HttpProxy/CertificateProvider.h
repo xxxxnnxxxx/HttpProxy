@@ -1,29 +1,23 @@
-#pragma once
+#ifndef _CERTIFICATEPROVIDER_H_
+#define _CERTIFICATEPROVIDER_H_
 
-/*
- * 证书提供者，主要用于生成所需要的根证书和对请求的网站每次签发证书
- * 
- * 注：部分的代码，直接来自于openssl库中的函数
- * 
- */
 #include <windows.h>
 #include <openssl/x509.h>
 #include <openssl/pkcs12.h>
 class CertificateProvider
 {
-public:
+ public:
     CertificateProvider();
     ~CertificateProvider();
     enum{
         FORMAT_ASN1=1,
         FORMAT_PEM=2,
     };
-
     enum{
         DEF_DAYS=30,
     };
 
-public:
+ public:
     static X509*        csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey);/*csr格式转crt格式*/
     static X509*        generate_certificate(EVP_PKEY * pkey, char*, char*, char*, int days=DEF_DAYS);/*生成证书*/
     static EVP_PKEY *   generate_keypair(int numofbits);/*生成密钥对*/
@@ -43,10 +37,12 @@ public:
     static int          pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA);/*正确返回非0*/
     static void         del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername);
     static PKCS12*      get_pkcs12fromWindowsAuth(char* pszpwd, char *pszIssuer, char*pszCertStore, char*pszUserName);/*系统中获取pkcs12*/
-private:
+ private:
     static int          rand_serial(BIGNUM *b, ASN1_INTEGER *ai);
     static int          do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts);
     static int          pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value);
     static int          do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP_MD *md, STACK_OF(OPENSSL_STRING) *sigopts);
     static X509 *       load_cert(const char *file, int format);
 };
+
+#endif // _CERTIFICATEPROVIDER_H_

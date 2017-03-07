@@ -1,5 +1,5 @@
-#ifndef _HTMLENTITY_H_
-#define _HTMLENTITY_H_
+#ifndef _HTTPCONTENT_H_
+#define _HTTPCONTENT_H_
 
 #include <windows.h>
 #include "header.h"
@@ -28,4 +28,4 @@ private:
 };
 
 
-#endif
+#endif // _HTTPCONTENT_H_

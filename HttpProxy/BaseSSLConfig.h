@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _BASESSLCONFIG_H_
+#define _BASESSLCONFIG_H_
 
 
 #define WIN32_LEAN_AND_MEAN
@@ -18,11 +19,12 @@ typedef struct _CERT_LIST_ {
     X509* cert;
 }CERT_LIST,*PCERT_LIST;
 
-class BaseSSLConfig/*final*/ {
+class BaseSSLConfig/*final*/ 
+{
 
-protected:
+ protected:
     BaseSSLConfig();
-public:
+ public:
     ~BaseSSLConfig();
     enum {
         NUMOfKEYBITS=2048,
@@ -33,23 +35,25 @@ public:
         STATUS_INITFINAL=0x00000001,
         STATUS_UNKNOWN  =0xFFFFFFFF,
     };
-public:
+ public:
     static BaseSSLConfig* CreateInstance();
-public:
+ public:
     BOOL        init_ssl();
     void        uninit_ssl();
-    int         CA(X509*x509);  //ca签名
-    ULONG       status() const { return m_status; }  //状态表所有的都是成功或完成
+    int         CA(X509*x509);
+    ULONG       status() const { return m_status; }
     BOOL        TrustRootCert();
-    BOOL        ExportRootCert(unsigned char *buf,int *len);    //导出根证书
+    BOOL        ExportRootCert(unsigned char *buf,int *len);
     X509*       rootcert() const { return m_rootcert;};
-private:
-    BOOL        InitRootCert(); //生成根证书
-private:
+ private:
+    BOOL        InitRootCert();
+ private:
     ULONG       m_status;
-    X509        *m_rootcert;   //根证书
-    EVP_PKEY    *m_rootkeypair;    //根密钥对
+    X509        *m_rootcert; 
+    EVP_PKEY    *m_rootkeypair;
     static BaseSSLConfig* instance;
     //
-    LIST_ENTRY m_HeaderofCertList;  //证书链表头
+    LIST_ENTRY m_HeaderofCertList;
 };
+
+#endif // _BASESSLCONFIG_H_

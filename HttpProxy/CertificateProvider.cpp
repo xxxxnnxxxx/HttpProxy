@@ -15,17 +15,15 @@
 */
 
 
-CertificateProvider::CertificateProvider()
-{
+CertificateProvider::CertificateProvider() {
 
 }
 
-CertificateProvider::~CertificateProvider()
-{
+CertificateProvider::~CertificateProvider() {
 
 }
-int CertificateProvider::rand_serial(BIGNUM *b, ASN1_INTEGER *ai)
-{
+
+int CertificateProvider::rand_serial(BIGNUM *b, ASN1_INTEGER *ai) {
     BIGNUM *btmp;
     int ret = 0;
 
@@ -52,8 +50,7 @@ error:
     return ret;
 }
 ////////////////////
-X509 *CertificateProvider::load_cert(const char *file, int format)
-{
+X509 *CertificateProvider::load_cert(const char *file, int format) {
     X509 *x = NULL;
     FILE *fp=NULL;
     errno_t err;
@@ -71,26 +68,15 @@ X509 *CertificateProvider::load_cert(const char *file, int format)
     fclose(fp);
     return (x);
 }
-
-
-////////////////////
-
-/*
-根据csr文件生成crt文件
-*/
-X509 * CertificateProvider::csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey)
-{
+//根据csr文件生成crt文件
+X509 * CertificateProvider::csr2crt(X509_REQ *x509_req, EVP_PKEY *pKey) {
     if (x509_req == NULL || pKey == NULL)
         return NULL;
 
     return X509_REQ_to_X509(x509_req, 2000, pKey);
 }
-
-/*
-生成密钥对
-*/
-EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
-{
+//生成密钥对
+EVP_PKEY * CertificateProvider::generate_keypair(int numofbits) {
     EVP_PKEY * pkey = EVP_PKEY_new();
     if (!pkey)
     {
@@ -100,8 +86,7 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
 
     RSA * rsa = RSA_generate_key(numofbits, RSA_F4, NULL, NULL);
 
-    if (!EVP_PKEY_assign_RSA(pkey, rsa))
-    {
+    if (!EVP_PKEY_assign_RSA(pkey, rsa)) {
         EVP_PKEY_free(pkey);
         return NULL;
     }
@@ -111,12 +96,8 @@ EVP_PKEY * CertificateProvider::generate_keypair(int numofbits)
 
     return pkey;
 }
-
-/*
-导出私钥
-*/
-int CertificateProvider::exportPriKey(EVP_PKEY *pKey, unsigned char *buf, int len)
-{
+//导出私钥
+int CertificateProvider::exportPriKey(EVP_PKEY *pKey, unsigned char *buf, int len) {
     int len_prikey = 0;
     unsigned char *buf_prikey = NULL;
 
@@ -145,18 +126,15 @@ int CertificateProvider::exportPriKey(EVP_PKEY *pKey, unsigned char *buf, int le
     return len_prikey;
 }
 
-void * CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len)
-{
+void * CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, int len) {
     EVP_PKEY *pPriKey = NULL;
 
     pPriKey = d2i_PrivateKey(EVP_PKEY_RSA,ppKey,(const unsigned char**)&buf, len);
 
     return (void *)pPriKey;
 }
-/*
-保存私钥到文件
-*/
-int CertificateProvider::savePriKeytofile(EVP_PKEY *pkey, char*path)
+//保存私钥到文件
+int CertificateProvider::savePriKeytofile(EVP_PKEY *pkey, char*path) {
 {
     unsigned char * buf = NULL;
     HANDLE hFile = INVALID_HANDLE_VALUE;
@@ -192,20 +170,15 @@ int CertificateProvider::savePriKeytofile(EVP_PKEY *pkey, char*path)
 
     return ret;
 }
-
-/*
-生成证书
-*/
+//生成证书
 X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey, 
                                                 char *O,
                                                 char *OU,
                                                 char *CN, 
-                                                int days/*=30*/)
-{
+                                                int days/*=30*/) {
     ASN1_INTEGER* aserial = NULL;
     X509 * x509 = X509_new();
-    if (!x509)
-    {
+    if (!x509) {
         return NULL;
     }
 
@@ -241,8 +214,7 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
     
 
     
-    if (!X509_sign(x509, pkey, EVP_sha256()))
-    {
+    if (!X509_sign(x509, pkey, EVP_sha256())) {
         X509_free(x509);
         return NULL;
     }
@@ -250,54 +222,7 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
     return x509;
 }
 
-/*
-添加证书到系统指定的位置
-pos: "ROOT","MY","SPC","CA"
-*/
-//int CertificateProvider::addCert2WindowsAuth(unsigned char *buf_x509_der, 
-//                                             int len_x509_der, 
-//                                             const wchar_t *pos)
-//{
-//    int ret = 0;
-//    int error = 0;
-//    HCERTSTORE hRootCertStore;
-//    //hRootCertStore = CertOpenSystemStoreA(NULL, pos);
-//    hRootCertStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
-//                                    0, 
-//                                    0, 
-//                                    CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
-//                                    L"root");
-//    if (hRootCertStore != NULL)
-//    {
-//        //读取证书内容
-//        if (CertAddEncodedCertificateToStore(hRootCertStore,
-//            X509_ASN_ENCODING,
-//            buf_x509_der, len_x509_der,
-//            CERT_STORE_ADD_USE_EXISTING, NULL))
-//        {
-//#ifdef _DEBUG
-//            printf("Successful\n");
-//#endif
-//            ret = 1;
-//        }
-//        else {
-//#ifdef _DEBUG
-//            error = GetLastError();
-//            printf("CertAddEncodeCerificateToStore->GetLastError():%d", error);
-//#endif
-//        }
-//        CertCloseStore(hRootCertStore, 0);
-//    }
-//
-//    return ret;
-//}
-
-
-/*
-
-*/
-int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509)
-{
+int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509) {
     int len_x509 = 0;
     unsigned char * buf_x509 = NULL;
     int ret = 0;
@@ -311,14 +236,12 @@ int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509)
                                         0, 
                                         CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
                                         L"Root");
-        if (hCertStore != NULL)
-        {
+        if (hCertStore != NULL) {
             //读取证书内容
             if (CertAddEncodedCertificateToStore(hCertStore,
                 X509_ASN_ENCODING,
                 buf_x509, len_x509,
-                CERT_STORE_ADD_USE_EXISTING, NULL))
-            {
+                CERT_STORE_ADD_USE_EXISTING, NULL)) {
 #ifdef _DEBUG
                 printf("Successful\n");
 #endif
@@ -337,8 +260,7 @@ int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509)
     return ret;
 }
 
-int CertificateProvider::addCert2WindowsAuth_MY(PKCS12*pkcs12, char* password)
-{
+int CertificateProvider::addCert2WindowsAuth_MY(PKCS12*pkcs12, char* password) {
     int ret = 0;
     int len_pkcs12 = 0;
     unsigned char* buf_pkcs12 = NULL;
@@ -353,21 +275,18 @@ int CertificateProvider::addCert2WindowsAuth_MY(PKCS12*pkcs12, char* password)
 
     len_pkcs12 = i2d_PKCS12(pkcs12, &buf_pkcs12);
 
-    if (buf_pkcs12 > 0)
-    {
+    if (buf_pkcs12 > 0) {
 
         cdb.cbData=len_pkcs12;
         cdb.pbData=buf_pkcs12;
         hImportCertStore = PFXImportCertStore(&cdb,pwspwd,CRYPT_EXPORTABLE);
         
         //读取证书内容
-        if(hImportCertStore)
-        {
+        if(hImportCertStore) {
             PCCERT_CONTEXT pCertContext = NULL;
             pCertContext = CertEnumCertificatesInStore(hImportCertStore,pCertContext);
 
-            if(pCertContext!=NULL)
-            {
+            if(pCertContext!=NULL) {
                // hCertStore = CertOpenSystemStoreW(NULL, pos);
                 hCertStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, 
                                             0, 
@@ -393,10 +312,8 @@ int CertificateProvider::addCert2WindowsAuth_MY(PKCS12*pkcs12, char* password)
 
     return ret;
 }
-
-/*buf=NULL || len==0 返回需要的内存空间长度*/
-int CertificateProvider::exportx509(X509* x509, unsigned char *buf, int len)
-{
+//buf=NULL || len==0 返回需要的内存空间长度
+int CertificateProvider::exportx509(X509* x509, unsigned char *buf, int len) {
     int len_x509=0;
     unsigned char *buf_x509 = NULL;
 
@@ -405,8 +322,7 @@ int CertificateProvider::exportx509(X509* x509, unsigned char *buf, int len)
     if(len_x509 < 0)
         return 0;
 
-    if(buf == NULL || len == 0)
-    {
+    if(buf == NULL || len == 0) {
         if(buf_x509 != NULL)
             OPENSSL_free(buf_x509);
         return len_x509;
@@ -420,8 +336,7 @@ int CertificateProvider::exportx509(X509* x509, unsigned char *buf, int len)
     return len_x509;
 }
 
-void* CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len)
-{
+void* CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len) {
     int len_x509 = 0;
     X509 *x509 = NULL;
 
@@ -430,8 +345,7 @@ void* CertificateProvider::importx509(X509**pX509, unsigned char* buf, int len)
     return (void*)x509;
 }
 
-int CertificateProvider::saveX509tofile(X509* x509,char *path)
-{
+int CertificateProvider::saveX509tofile(X509* x509,char *path) {
     unsigned char * buf = NULL;
     FILE *fp = NULL;
     size_t retsize = 0;
@@ -448,8 +362,7 @@ int CertificateProvider::saveX509tofile(X509* x509,char *path)
     len = exportx509(x509,buf,len);
 
     error = fopen_s(&fp, path, "wb+");
-    if(error == 0)
-    {
+    if(error == 0) {
         retsize = fwrite(buf, 1, len, fp);
         if(retsize == len)
             ret=len;
@@ -460,8 +373,7 @@ int CertificateProvider::saveX509tofile(X509* x509,char *path)
     if(fp != NULL)
         fclose(fp);
 
-    if(buf!=NULL)
-    {
+    if(buf!=NULL) {
         free(buf);
         buf=NULL;
     }
@@ -469,11 +381,8 @@ int CertificateProvider::saveX509tofile(X509* x509,char *path)
     return ret;
     
 }
-
-
 ////private
-int CertificateProvider::pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
-{
+int CertificateProvider::pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value) {
     int rv;
     char *stmp, *vtmp = NULL;
     stmp = OPENSSL_strdup(value);
@@ -491,8 +400,7 @@ int CertificateProvider::pkey_ctrl_string(EVP_PKEY_CTX *ctx, const char *value)
     return rv;
 }
 
-int CertificateProvider::do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP_MD *md, STACK_OF(OPENSSL_STRING) *sigopts)
-{
+int CertificateProvider::do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP_MD *md, STACK_OF(OPENSSL_STRING) *sigopts) {
     EVP_PKEY_CTX *pkctx = NULL;
     int i;
 
@@ -510,8 +418,8 @@ int CertificateProvider::do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP
     }
     return 1;
 }
- int CertificateProvider::do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts)
-{
+
+int CertificateProvider::do_X509_sign(X509 *x, EVP_PKEY *pkey, const EVP_MD *md,STACK_OF(OPENSSL_STRING) *sigopts) {
     int rv;
     EVP_MD_CTX *mctx = EVP_MD_CTX_create();
 
@@ -522,8 +430,7 @@ int CertificateProvider::do_sign_init(EVP_MD_CTX *ctx, EVP_PKEY *pkey, const EVP
     return rv > 0 ? 1 : 0;
 }
 
-int CertificateProvider::x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca)
-{
+int CertificateProvider::x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca) {
     int ret=0;
     ASN1_INTEGER *bs = NULL;
     X509_STORE_CTX xsc;
@@ -580,35 +487,28 @@ int CertificateProvider::x509_certify(X509*x,X509*xca,EVP_PKEY*pkey_ca)
 }
 
 
-PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA)
-{
+PKCS12* CertificateProvider::x509topkcs12(X509* x509,EVP_PKEY *pkey,char *password,char* aname,X509*CA) {
     PKCS12* ppkcs12=NULL;
     STACK_OF(X509) *cacertstack=NULL;
 
-    if(CA!=NULL)
-    {
+    if(CA!=NULL) {
         cacertstack = sk_X509_new_null();
-        if(cacertstack!=NULL)
-        {
+        if(cacertstack!=NULL) {
             sk_X509_push(cacertstack, CA);
         }
     }
     ppkcs12 = PKCS12_create(password,aname , pkey, x509, cacertstack,0,0, 0, 0, 0);
     
-
     return ppkcs12;
 }
-
 //通过PKCS12获取证书和私钥，返回正确非0，错误0
-int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA)
-{
+int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**cert,EVP_PKEY**pkey,X509**CA) {
     int ret = 0;
     STACK_OF(X509) *cacertstack=NULL;
 
     ret = PKCS12_parse(pkcs12, pass, pkey, cert, &cacertstack);
 
-    if(ret!=1)
-    {
+    if(ret!=1) {
         return 0;
     }
 
@@ -623,10 +523,8 @@ int CertificateProvider::pkcs12_getx509(PKCS12* pkcs12,char* pass,int len,X509**
 
     return ret;
 }
-
-/*删除指定的证书*/
-void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername)
-{
+//删除指定的证书
+void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *pszUsername) {
     HANDLE          hStoreHandle;
     PCCERT_CONTEXT  pCertContext=NULL;   
     PCCERT_CONTEXT  pDupCertContext; 
@@ -673,13 +571,9 @@ void CertificateProvider::del_certs(char *pszIssuer, char *pszCertStore, char *p
 
     CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
-
-
 }
-
-/*判断证书是否存在，*/
-int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char *pszUsername)
-{
+//判断证书是否存在
+int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char *pszUsername) {
     int ret  = 0;
     HANDLE          hStoreHandle;
     PCCERT_CONTEXT  pCertContext = NULL;
@@ -687,35 +581,31 @@ int CertificateProvider::is_certexist(char *pszIssuer, char *pszCertStore, char 
     char pszNameString[256];
     char pszIssuerString[256];
 
-    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))) {
         printf("The store was not opened.");
     }
 
     while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
-        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))) {
             printf("CertGetName failed.");
         }
 
-        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszIssuerString, 128))){
+        if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszIssuerString, 128))) {
             printf("CertGetName failed.");
         }
 
-        if(_stricmp(pszIssuer, pszIssuerString) == 0){
+        if(_stricmp(pszIssuer, pszIssuerString) == 0) {
             if(_stricmp(pszUsername ,pszNameString) == 0){
                 ret=1;
             }
-        } 
-
-        
+        }    
     } // end while
     CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
     return ret;
 }
-
 //
-int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszpwd)
-{
+int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszpwd) {
     int ret = 0;
     HANDLE          hStoreHandle;
     PCCERT_CONTEXT  pCertContext=NULL;   
@@ -731,7 +621,7 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszp
     char pszNameString[256];
     char pszIssuerString[256];
 
-    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))) {
         return 0;
     }
 
@@ -753,14 +643,12 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszp
         if(bRet){
             fpx.pbData=(unsigned char*)malloc(fpx.cbData);
             bRet=PFXExportCertStoreEx(pCertContext->hCertStore,&fpx,pwszpwd,NULL,EXPORT_PRIVATE_KEYS);
-            if(bRet)
-            {
+            if(bRet) {
                 int tmplen = 0;
                 BIO* bio = BIO_new_mem_buf(fpx.pbData,fpx.cbData);
                 pkcs12 = d2i_PKCS12_bio(bio,&pkcs12);
                 BIO_free(bio);
-                if(pkcs12_getx509(pkcs12, pszpwd, tmplen, &pX09, &pPriKey,&ca))
-                {
+                if(pkcs12_getx509(pkcs12, pszpwd, tmplen, &pX09, &pPriKey,&ca)) {
                     if(pX09 != NULL) {
                         EVP_PKEY * pubkey = X509_get_pubkey(x509);
 
@@ -773,8 +661,7 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszp
                 EVP_PKEY_free(pPriKey);
             }
 
-            if(fpx.pbData!=NULL)
-            {
+            if(fpx.pbData!=NULL) {
                 free(fpx.pbData);
                 fpx.pbData = NULL;
             }
@@ -791,15 +678,13 @@ int CertificateProvider::is_certexist(X509 *x509, char *pszCertStore, char *pszp
     CertFreeCertificateContext(pCertContext);
     CertCloseStore(hStoreHandle, 0);
 
-
     return ret;
 }
 
-PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIssuer, char*pszCertStore, char*pszUserName)
-{
+PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIssuer, char*pszCertStore, char*pszUserName) {
     int ret=0;
-    HANDLE          hStoreHandle;
-    PCCERT_CONTEXT  pCertContext=NULL;   
+    HANDLE hStoreHandle;
+    PCCERT_CONTEXT pCertContext=NULL;   
     PKCS12 *pkcs12=NULL;
     CRYPT_DATA_BLOB fpx;
     BOOL bRet=FALSE;
@@ -813,7 +698,7 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
 
     CommonFuncs::a2w(pszpwd,&pwspwd);
 
-    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))){
+    if ( !(hStoreHandle = CertOpenSystemStoreA(NULL, pszCertStore))) {
         return NULL;
     }
 
@@ -822,7 +707,7 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
         return NULL;
     }
 
-    while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)){
+    while(pCertContext= CertEnumCertificatesInStore(hStoreHandle, pCertContext)) {
         if(!(CertGetNameStringA(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))){
             printf("CertGetName failed.");
         }
@@ -831,7 +716,7 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
             printf("CertGetName failed.");
         }
 
-        if(_stricmp(pszIssuer, pszIssuerString) == 0){
+        if(_stricmp(pszIssuer, pszIssuerString) == 0) {
             if(_stricmp(pszUserName ,pszNameString) == 0){
                 memset(&fpx,0,sizeof(CRYPT_DATA_BLOB));
                 fpx.pbData=NULL;
@@ -869,16 +754,12 @@ PKCS12* CertificateProvider::get_pkcs12fromWindowsAuth(char *pszpwd, char *pszIs
                 if(pkcs12 != NULL) break;
             }
         } 
-        
-        
     } // end while
 
     CertFreeCertificateContext(pCertContext);
     if(hMemoryStore != NULL) CertCloseStore(hMemoryStore, CERT_CLOSE_STORE_CHECK_FLAG);
     if(hStoreHandle != NULL) CertCloseStore(hStoreHandle, 0);
-
     if(pwspwd != NULL) free(pwspwd);
-
 
     return pkcs12;
 }

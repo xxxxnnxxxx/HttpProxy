@@ -12,19 +12,14 @@
 
 
 // 页面数据回调函数 ,也是非连续的数据，需要叠加 
-static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream)
-{
+static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
     int len = size * nmemb;
     HttpContent*pEntity = (HttpContent*)stream;
     pEntity->insert((const char*)ptr, len);
     return len;
 }
 // 返回http header回调函数  
-/*
-
-*/
-static size_t header_callback(void *ptr, size_t size, size_t nmemb, void *stream)
-{
+static size_t header_callback(void *ptr, size_t size, size_t nmemb, void *stream) {
     int len = size * nmemb;
     HttpHeaders *pHttpHeaders = (HttpHeaders*)stream;
     const char *pPos = (char*)ptr;
@@ -87,10 +82,8 @@ HttpRequest::~HttpRequest() {
 int HttpRequest::http_request(HttpHeaders *request_headers,
                               HttpContent *request_content,
                               HttpHeaders* response_headers,
-                              HttpContent *response_content)
-{
+                              HttpContent *response_content) {
     int ret = HttpRequest::CURL_LAST;
-
     CURL *curl;
     CURLcode res;
     struct curl_slist *chunk = NULL;
@@ -143,14 +136,11 @@ int HttpRequest::http_request(HttpHeaders *request_headers,
         if (bPOST) {
             curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request_content->getbuffer(&retsize));
         }
-
         // 设置回调函数  
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, response_headers);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_content);
-
-
 
         res = curl_easy_perform(curl);
         res = (CURLcode)handleError(res, response_headers, response_content);
@@ -168,10 +158,8 @@ int HttpRequest::http_request(HttpHeaders *request_headers,
 int HttpRequest::https_request(HttpHeaders *request_headers,
                                 HttpContent *request_content,
                                 HttpHeaders *response_headers,
-                                HttpContent *response_content)
-{
+                                HttpContent *response_content) {
     int ret = HttpRequest::CURL_LAST;
-
     CURL *curl;
     CURLcode res;
     struct curl_slist *chunk = NULL;
@@ -235,10 +223,8 @@ int HttpRequest::https_request(HttpHeaders *request_headers,
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, response_content);
 
-
         res = curl_easy_perform(curl);
         res = (CURLcode)handleError(res, response_headers, response_content);
-
         /* always cleanup */
         if (uri != NULL)free(uri);
         curl_easy_cleanup(curl);
@@ -250,9 +236,9 @@ int HttpRequest::https_request(HttpHeaders *request_headers,
     return ret;
 }
 
-
-int HttpRequest::handleError(int dwError, HttpHeaders *response_headers, HttpContent *response_content)
-{
+int HttpRequest::handleError(int dwError, 
+                             HttpHeaders *response_headers, 
+                             HttpContent *response_content) {
     int ret = dwError;
     switch (dwError)
     {

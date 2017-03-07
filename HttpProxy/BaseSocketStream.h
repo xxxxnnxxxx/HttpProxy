@@ -6,7 +6,7 @@
 
 class  BaseSocketStream
 {
-public:
+ public:
     BaseSocketStream(char**pprecv_buf,DWORD *len_recv_buf,char**ppsend_buf,DWORD *len_send_buf);
     virtual ~BaseSocketStream();
 
@@ -17,19 +17,17 @@ public:
         BSS_RET_RECV,
         BSS_RET_UNKNOWN,
     };
-public:
-    virtual int init(void* buf,int len);        //其实对于BaseSocketStream没用啊，为了统一SSLSocketStream
-    virtual int write(void *buf,DWORD len);    //写入数据
-    virtual int read(void *buf,DWORD len);     //读取数据
+ public:
+    virtual int init(void* buf,int len);       // 其实对于BaseSocketStream没用啊，为了统一SSLSocketStream
+    virtual int write(void *buf,DWORD len);    // 写入数据
+    virtual int read(void *buf,DWORD len);     // 读取数据
     virtual char * _classname(char *buf, DWORD len);
-public:
-    int m_socket;
-
-    DWORD *m_plen_recv_buf;
-    DWORD *m_plen_send_buf;
-
+ public:
+    int     m_socket;
+    DWORD * m_plen_recv_buf;
+    DWORD * m_plen_send_buf;
     char * *m_pprecv_buf;
     char * *m_ppsend_buf;
 };
 
-#endif
+#endif // _BASESOCKET_H_

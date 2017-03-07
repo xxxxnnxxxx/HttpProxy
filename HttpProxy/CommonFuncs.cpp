@@ -1,25 +1,21 @@
 
 #include "CommonFuncs.h"
 
-int __stdcall CommonFuncs::w2a(const wchar_t * wstr, char ** cstr)
-{
+int __stdcall CommonFuncs::w2a(const wchar_t * wstr, char ** cstr) {
     int nByte = 0;
     nByte = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
     *cstr = (char*)malloc(nByte);
     return WideCharToMultiByte(CP_ACP, 0, wstr, -1, *cstr, nByte, NULL, NULL);
 }
 
-
-int __stdcall CommonFuncs::a2w(const char *cstr, wchar_t **wstr)
-{
+int __stdcall CommonFuncs::a2w(const char *cstr, wchar_t **wstr) {
     int nWideCharLen = 0;
     nWideCharLen = MultiByteToWideChar(CP_ACP, 0, cstr, -1, NULL, 0);
     *wstr = (wchar_t*)malloc(nWideCharLen * sizeof(wchar_t));
     return MultiByteToWideChar(CP_ACP, 0, cstr, -1, *wstr, nWideCharLen * sizeof(wchar_t));
 }
 
-int __stdcall CommonFuncs::trim(char *str, size_t len)
-{
+int __stdcall CommonFuncs::trim(char *str, size_t len) {
     char *pHeader = str;
     char *buf = NULL;
     if (len == 0 || str==NULL)
@@ -57,8 +53,7 @@ int __stdcall CommonFuncs::trim(char *str, size_t len)
     return strlen(pHeader);
 }
 
-char * __stdcall CommonFuncs::_realloc(char ** buf, size_t len,size_t relen)
-{
+char * __stdcall CommonFuncs::_realloc(char ** buf, size_t len,size_t relen) {
     char * result = NULL;
 
     if (relen < len) return NULL;
@@ -78,17 +73,14 @@ char * __stdcall CommonFuncs::_realloc(char ** buf, size_t len,size_t relen)
     return result;
 }
 
-
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-char * __stdcall CommonFuncs::GetCurrentDir(char* value, int len)
-{
+char * __stdcall CommonFuncs::GetCurrentDir(char* value, int len) {
     MEMORY_BASIC_INFORMATION membinfo;
-    if (VirtualQuery(GetCurrentDir, &membinfo, sizeof(membinfo)) == sizeof(MEMORY_BASIC_INFORMATION))
-    {
+    if (VirtualQuery(GetCurrentDir, &membinfo, sizeof(membinfo)) 
+        == sizeof(MEMORY_BASIC_INFORMATION)) {
         GetModuleFileNameA((HMODULE)(DWORD)membinfo.AllocationBase, value, len);
     }
-    else
-    {
+    else {
         GetModuleFileNameA((HMODULE)&__ImageBase, value, len);
     }
 
@@ -103,7 +95,6 @@ char * __stdcall CommonFuncs::GetCurrentDir(char* value, int len)
     return (char*)0;
 }
 
-DWORD __stdcall CommonFuncs::_min(DWORD a, DWORD b)
-{
+DWORD __stdcall CommonFuncs::_min(DWORD a, DWORD b) {
     return (a > b) ? b : a;
 }
