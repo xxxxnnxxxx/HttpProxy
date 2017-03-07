@@ -1,4 +1,4 @@
-/HttpProxy.vcproj.nsh-PC.Administrator.user
+*.user
 /Release/
 /Debug/
 *.aps
