@@ -237,7 +237,6 @@ int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509) {
                                         CERT_STORE_OPEN_EXISTING_FLAG | CERT_SYSTEM_STORE_LOCAL_MACHINE,
                                         L"Root");
         if (hCertStore != NULL) {
-            //读取证书内容
             if (CertAddEncodedCertificateToStore(hCertStore,
                 X509_ASN_ENCODING,
                 buf_x509, len_x509,
