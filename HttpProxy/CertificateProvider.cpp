@@ -135,7 +135,6 @@ void * CertificateProvider::importPriKey(EVP_PKEY **ppKey, unsigned char *buf, i
 }
 //保存私钥到文件
 int CertificateProvider::savePriKeytofile(EVP_PKEY *pkey, char*path) {
-{
     unsigned char * buf = NULL;
     HANDLE hFile = INVALID_HANDLE_VALUE;
     int ret = 0;
@@ -175,7 +174,7 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
                                                 char *O,
                                                 char *OU,
                                                 char *CN, 
-                                                int days/*=30*/) {
+                                                int days) {
     ASN1_INTEGER* aserial = NULL;
     X509 * x509 = X509_new();
     if (!x509) {
@@ -222,7 +221,8 @@ X509* CertificateProvider::generate_certificate(EVP_PKEY * pkey,
     return x509;
 }
 
-int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509) {
+int CertificateProvider::addCert2WindowsAuth_ROOT(X509* x509) 
+{
     int len_x509 = 0;
     unsigned char * buf_x509 = NULL;
     int ret = 0;
